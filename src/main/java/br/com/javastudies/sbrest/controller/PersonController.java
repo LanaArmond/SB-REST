@@ -1,6 +1,6 @@
 package br.com.javastudies.sbrest.controller;
 
-import br.com.javastudies.sbrest.model.Person;
+import br.com.javastudies.sbrest.data.dto.PersonDTO;
 import br.com.javastudies.sbrest.service.PersonService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -17,16 +17,16 @@ public class PersonController {
     private PersonService service;
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<Person> findAll() { return service.findAll(); }
+    public List<PersonDTO> findAll() { return service.findAll(); }
 
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Person findById(@PathVariable("id") Long id) { return service.findById(id); }
+    public PersonDTO findById(@PathVariable("id") Long id) { return service.findById(id); }
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public Person create(@RequestBody Person person) { return service.create(person); }
+    public PersonDTO create(@RequestBody PersonDTO person) { return service.create(person); }
 
     @PutMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public Person update(Person person) { return service.update(person); }
+    public PersonDTO update(@RequestBody PersonDTO person) { return service.update(person); }
 
     @DeleteMapping(value = "/{id}")
     public ResponseEntity<?> delete(@PathVariable("id") Long id) {
