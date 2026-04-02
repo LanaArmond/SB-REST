@@ -13,3 +13,8 @@ spring:
       ddl-auto: update
     show-sql: false
     open-in-view: false
+
+logging:
+  level:
+    # br.com.javastudies.sbrest: DEBUG
+    root: WARN
