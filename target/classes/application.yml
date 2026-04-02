@@ -10,6 +10,11 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: none
     show-sql: false
     open-in-view: false
+
+logging:
+  level:
+    # br.com.javastudies.sbrest: DEBUG
+    root: INFO
