@@ -2,6 +2,7 @@ package br.com.javastudies.sbrest.service;
 
 import br.com.javastudies.sbrest.controller.PersonController;
 import br.com.javastudies.sbrest.data.dto.PersonDTO;
+import br.com.javastudies.sbrest.exception.RequiredObjectIsNullException;
 import br.com.javastudies.sbrest.exception.ResourceNotFoundException;
 import static br.com.javastudies.sbrest.mapper.ObjectMapper.parseListObjects;
 import static br.com.javastudies.sbrest.mapper.ObjectMapper.parseObject;
@@ -23,7 +24,6 @@ import org.slf4j.LoggerFactory;
 @Service
 public class PersonService {
 
-    private final AtomicLong counter = new AtomicLong();
     private Logger logger = LoggerFactory.getLogger(PersonService.class.getName());
 
     @Autowired
@@ -45,6 +45,9 @@ public class PersonService {
     }
 
     public PersonDTO create(PersonDTO person) {
+
+        if (person == null) throw new RequiredObjectIsNullException();
+
         logger.info("Creating person!");
         var entity = parseObject(person, Person.class);
         var dto =  parseObject(repository.save(entity), PersonDTO.class);
@@ -53,6 +56,9 @@ public class PersonService {
     }
 
     public PersonDTO update(PersonDTO person) {
+
+        if (person == null) throw new RequiredObjectIsNullException();
+
         logger.info("Updating person!");
         Person entity = repository.findById(person.getId()).orElseThrow(() -> new ResourceNotFoundException("No records found for this ID!"));
 
