@@ -18,3 +18,8 @@ logging:
   level:
     # br.com.javastudies.sbrest: DEBUG
     root: INFO
+
+spring-doc:
+  paths-to-match: /api/**/**
+  swagger-ui:
+    use-root-path: true
