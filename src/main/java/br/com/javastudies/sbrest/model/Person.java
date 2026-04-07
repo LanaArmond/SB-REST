@@ -1,7 +1,6 @@
 package br.com.javastudies.sbrest.model;
 
 import jakarta.persistence.*;
-
 import java.io.Serializable;
 import java.util.Objects;
 
