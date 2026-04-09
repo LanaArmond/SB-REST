@@ -1,1 +1,9 @@
-br/com/javastudies/sbrest/SbRestApplicationTests.class
+br/com/javastudies/sbrest/config/TestConfigs.class
+br/com/javastudies/sbrest/unittests/mapper/mocks/MockBook.class
+br/com/javastudies/sbrest/unittests/mapper/mocks/MockPerson.class
+br/com/javastudies/sbrest/integrationtests/testcontainers/AbstractIntegrationTest$Initializer.class
+br/com/javastudies/sbrest/unittests/mapper/ObjectMapperTests.class
+br/com/javastudies/sbrest/integrationtests/testcontainers/AbstractIntegrationTest.class
+br/com/javastudies/sbrest/unittests/service/BookServiceTest.class
+br/com/javastudies/sbrest/integrationtests/swagger/SwaggerIntegrationTest.class
+br/com/javastudies/sbrest/unittests/service/PersonServiceTest.class

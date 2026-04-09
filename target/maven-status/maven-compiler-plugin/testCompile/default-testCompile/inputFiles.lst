@@ -1,1 +1,8 @@
-/home/lana/IdeaProjects/SB-REST/src/test/java/br/com/javastudies/sbrest/SbRestApplicationTests.java
+/home/lana/IdeaProjects/SB-REST/src/test/java/br/com/javastudies/sbrest/config/TestConfigs.java
+/home/lana/IdeaProjects/SB-REST/src/test/java/br/com/javastudies/sbrest/integrationtests/swagger/SwaggerIntegrationTest.java
+/home/lana/IdeaProjects/SB-REST/src/test/java/br/com/javastudies/sbrest/integrationtests/testcontainers/AbstractIntegrationTest.java
+/home/lana/IdeaProjects/SB-REST/src/test/java/br/com/javastudies/sbrest/unittests/mapper/ObjectMapperTests.java
+/home/lana/IdeaProjects/SB-REST/src/test/java/br/com/javastudies/sbrest/unittests/mapper/mocks/MockBook.java
+/home/lana/IdeaProjects/SB-REST/src/test/java/br/com/javastudies/sbrest/unittests/mapper/mocks/MockPerson.java
+/home/lana/IdeaProjects/SB-REST/src/test/java/br/com/javastudies/sbrest/unittests/service/BookServiceTest.java
+/home/lana/IdeaProjects/SB-REST/src/test/java/br/com/javastudies/sbrest/unittests/service/PersonServiceTest.java

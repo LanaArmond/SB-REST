@@ -1,1 +1,24 @@
-spring.application.name=SB-REST
+server:
+  port: 8888
+
+spring:
+  application:
+    name: SB-REST
+
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: false
+    open-in-view: false
+
+logging:
+  level:
+    root: INFO
+
+spring-doc:
+  paths-to-match: /api/**/**
+  swagger-ui:
+    use-root-path: true
