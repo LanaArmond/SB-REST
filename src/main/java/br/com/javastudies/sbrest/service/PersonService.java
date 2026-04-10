@@ -9,6 +9,7 @@ import static br.com.javastudies.sbrest.mapper.ObjectMapper.parseObject;
 
 import br.com.javastudies.sbrest.model.Person;
 import br.com.javastudies.sbrest.repository.PersonRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
@@ -77,11 +78,24 @@ public class PersonService {
         repository.delete(entity);
     }
 
+    @Transactional
+    public PersonDTO disablePerson(Long id) {
+        logger.info("Disabling person!");
+        repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("No records found for this ID!"));
+        repository.disablePerson(id);
+        var entity = repository.findById(id).get();
+
+        var dto = parseObject(entity, PersonDTO.class);
+        addHateoasLinks(dto);
+        return dto;
+    }
+
     private void addHateoasLinks(PersonDTO dto) {
         dto.add(linkTo(methodOn(PersonController.class).findById(dto.getId())).withSelfRel().withType("GET"));
         dto.add(linkTo(methodOn(PersonController.class).findAll()).withRel("findAll").withType("GET"));
         dto.add(linkTo(methodOn(PersonController.class).create(dto)).withRel("create").withType("POST"));
         dto.add(linkTo(methodOn(PersonController.class).update(dto)).withRel("update").withType("PUT"));
         dto.add(linkTo(methodOn(PersonController.class).delete(dto.getId())).withRel("delete").withType("DELETE"));
+        dto.add(linkTo(methodOn(PersonController.class).disablePerson(dto.getId())).withRel("disable").withType("PATCH"));
     }
 }
