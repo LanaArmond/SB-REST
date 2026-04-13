@@ -1,8 +1,6 @@
 package br.com.javastudies.sbrest.exception.handler;
 
-import br.com.javastudies.sbrest.exception.ExceptionResponse;
-import br.com.javastudies.sbrest.exception.RequiredObjectIsNullException;
-import br.com.javastudies.sbrest.exception.ResourceNotFoundException;
+import br.com.javastudies.sbrest.exception.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -34,4 +32,11 @@ public class CustomEntityResponseHandler extends ResponseEntityExceptionHandler 
         ExceptionResponse response = new ExceptionResponse(new Date(), ex.getMessage(), request.getDescription(false));
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
+
+    @ExceptionHandler(FileStorageException.class)
+    public final ResponseEntity<ExceptionResponse> handleFileStorageExceptions(Exception ex, WebRequest request) {
+        ExceptionResponse response = new ExceptionResponse(new Date(), ex.getMessage(), request.getDescription(false));
+        return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
 }
