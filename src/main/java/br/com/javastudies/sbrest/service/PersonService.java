@@ -6,11 +6,10 @@ import br.com.javastudies.sbrest.exception.BadRequestException;
 import br.com.javastudies.sbrest.exception.FileStorageException;
 import br.com.javastudies.sbrest.exception.RequiredObjectIsNullException;
 import br.com.javastudies.sbrest.exception.ResourceNotFoundException;
-import static br.com.javastudies.sbrest.mapper.ObjectMapper.parseListObjects;
+
 import static br.com.javastudies.sbrest.mapper.ObjectMapper.parseObject;
 
-import br.com.javastudies.sbrest.file.exporter.MediaTypes;
-import br.com.javastudies.sbrest.file.exporter.contract.FileExporter;
+import br.com.javastudies.sbrest.file.exporter.contract.PersonExporter;
 import br.com.javastudies.sbrest.file.exporter.factory.FileExporterFactory;
 import br.com.javastudies.sbrest.file.importer.contract.FileImporter;
 import br.com.javastudies.sbrest.file.importer.factory.FileImporterFactory;
@@ -23,7 +22,6 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 import org.springframework.core.io.Resource;
-import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
@@ -31,14 +29,12 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Optional;
@@ -108,13 +104,26 @@ public class PersonService {
         return dto;
     }
 
+    public Resource exportPerson(Long id, String acceptHeader) {
+        logger.info("Exporting data of one person!");
+        var person = repository.findById(id)
+                .map(entity -> parseObject(entity, PersonDTO.class))
+                .orElseThrow(() -> new ResourceNotFoundException("No records found for this ID!"));
+        try {
+            PersonExporter exporter = this.exporter.getExporter(acceptHeader);
+            return exporter.exportPerson(person);
+        } catch (Exception e) {
+            throw new RuntimeException("Error during file export!", e);
+        }
+    }
+
     public Resource exportPage(Pageable pageable, String acceptHeader) {
         logger.info("Exporting a people page!");
         var people = repository.findAll(pageable).map( person -> parseObject(person, PersonDTO.class)).getContent();
 
         try {
-            FileExporter exporter = this.exporter.getExporter(acceptHeader);
-            return exporter.exportFile(people);
+            PersonExporter exporter = this.exporter.getExporter(acceptHeader);
+            return exporter.exportPerson(people);
         } catch (Exception e) {
             throw new RuntimeException("Error during file export!", e);
         }

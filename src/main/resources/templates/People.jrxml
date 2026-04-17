@@ -1,0 +1,111 @@
+<!-- Created with Jaspersoft Studio version 7.0.6.final using JasperReports Library version 7.0.6-5d2a603fdc6b3db8f842a83383e594f41891534d  -->
+<jasperReport name="People" language="java" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="d47a9118-673b-4cec-b973-0264b6e1150d">
+	<property name="com.jaspersoft.studio.data.sql.tables" value="cmVzdF9zYi5wZXJzb24gQVMgLDc0LDc0LGFlY2JiY2ZiLWIwMjgtNGVhZC1hMzE2LTMwZGQxNTIy&#xa;OWY0Mzs="/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="MySQL Connection"/>
+	<style name="ZebraStyle">
+		<conditionalStyle mode="Opaque" forecolor="#FFFFFF" backcolor="#E0E0E0">
+			<conditionExpression><![CDATA[$V{REPORT_COUNT} % 2 == 0]]></conditionExpression>
+		</conditionalStyle>
+	</style>
+	<query language="SQL"><![CDATA[SELECT 
+    id,
+	CONCAT(first_name, ' ', last_name) AS name,
+	address,
+	gender,
+	enabled
+FROM rest_sb.person]]></query>
+	<field name="id" class="java.lang.Long">
+		<property name="com.jaspersoft.studio.field.name" value="id"/>
+		<property name="com.jaspersoft.studio.field.label" value="id"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="person"/>
+	</field>
+	<field name="name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="name"/>
+		<property name="com.jaspersoft.studio.field.label" value="name"/>
+	</field>
+	<field name="address" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="address"/>
+		<property name="com.jaspersoft.studio.field.label" value="address"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="person"/>
+	</field>
+	<field name="gender" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="gender"/>
+		<property name="com.jaspersoft.studio.field.label" value="gender"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="person"/>
+	</field>
+	<field name="enabled" class="java.lang.Boolean">
+		<property name="com.jaspersoft.studio.field.name" value="enabled"/>
+		<property name="com.jaspersoft.studio.field.label" value="enabled"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="person"/>
+	</field>
+	<background splitType="Stretch"/>
+	<title height="100" splitType="Stretch">
+		<element kind="staticText" uuid="847562dc-2ee0-4b82-ab98-e460916b8237" x="220" y="10" width="330" height="64" fontSize="40.0" bold="true" hTextAlign="Center" vTextAlign="Middle">
+			<text><![CDATA[PEOPLE REPORT]]></text>
+		</element>
+		<element kind="image" uuid="05f60898-0373-494a-b098-42c0ec53e21a" x="0" y="18" width="209" height="64">
+			<expression><![CDATA["https://raw.githubusercontent.com/leandrocgsi/blog-images/refs/heads/main/logo_with_text.png"]]></expression>
+		</element>
+	</title>
+	<pageHeader height="52" splitType="Stretch">
+		<element kind="staticText" uuid="88d8a33e-24f4-48da-82be-1d4641c4a7c3" x="90" y="11" width="380" height="30" hTextAlign="Center" vTextAlign="Middle">
+			<text><![CDATA[Aprendendo a gerar relatórios com JasperReport - Java SpringBoot]]></text>
+		</element>
+	</pageHeader>
+	<columnHeader height="30" splitType="Stretch">
+		<element kind="staticText" mode="Opaque" x="20" y="0" width="60" height="30" forecolor="#FFFFFF" backcolor="#235560" fontName="SansSerif" fontSize="12.0" bold="true" hTextAlign="Center" vTextAlign="Middle">
+			<text><![CDATA[Code]]></text>
+		</element>
+		<element kind="staticText" mode="Opaque" x="80" y="0" width="120" height="30" forecolor="#FFFFFF" backcolor="#235560" fontName="SansSerif" fontSize="12.0" bold="true" hTextAlign="Center" vTextAlign="Middle">
+			<text><![CDATA[Name]]></text>
+		</element>
+		<element kind="staticText" mode="Opaque" x="200" y="0" width="130" height="30" forecolor="#FFFFFF" backcolor="#235560" fontName="SansSerif" fontSize="12.0" bold="true" hTextAlign="Center" vTextAlign="Middle">
+			<text><![CDATA[Address]]></text>
+		</element>
+		<element kind="staticText" mode="Opaque" x="330" y="0" width="100" height="30" forecolor="#FFFFFF" backcolor="#235560" fontName="SansSerif" fontSize="12.0" bold="true" hTextAlign="Center" vTextAlign="Middle">
+			<text><![CDATA[Gender]]></text>
+		</element>
+		<element kind="staticText" mode="Opaque" x="430" y="0" width="100" height="30" forecolor="#FFFFFF" backcolor="#235560" fontName="SansSerif" fontSize="12.0" bold="true" hTextAlign="Center" vTextAlign="Middle">
+			<text><![CDATA[Enabled]]></text>
+		</element>
+	</columnHeader>
+
+	<detail>
+		<band height="30" splitType="Stretch">
+
+			<element kind="textField" mode="Opaque" x="20" y="0" width="60" height="30" style="ZebraStyle" hTextAlign="Center" vTextAlign="Middle">
+				<expression><![CDATA[$F{id}]]></expression>
+			</element>
+
+			<element kind="textField" mode="Opaque" x="80" y="0" width="120" height="30" style="ZebraStyle" vTextAlign="Middle">
+				<expression><![CDATA[$F{name}]]></expression>
+			</element>
+
+			<element kind="textField" mode="Opaque" x="200" y="0" width="130" height="30" style="ZebraStyle" vTextAlign="Middle">
+				<expression><![CDATA[$F{address}]]></expression>
+			</element>
+
+			<element kind="textField" mode="Opaque" x="330" y="0" width="100" height="30" style="ZebraStyle" hTextAlign="Center" vTextAlign="Middle">
+				<expression><![CDATA[$F{gender}]]></expression>
+			</element>
+
+			<element kind="textField" mode="Opaque" x="430" y="0" width="100" height="30" style="ZebraStyle" hTextAlign="Center" vTextAlign="Middle">
+				<expression><![CDATA[$F{enabled} ? "Yes" : "No"]]></expression>
+			</element>
+
+		</band>
+	</detail>
+	<columnFooter height="45" splitType="Stretch"/>
+	<pageFooter height="69" splitType="Stretch">
+		<element kind="textField" uuid="f2a62e33-b6de-4a91-952e-2146a29fe112" x="380" y="30" width="70" height="30" hTextAlign="Right">
+			<expression><![CDATA["Page " + $V{PAGE_NUMBER}]]></expression>
+		</element>
+		<element kind="textField" uuid="2856377f-06d3-4c09-b0ca-214a8e1e0e67" x="450" y="30" width="84" height="30" evaluationTime="Report" hTextAlign="Left">
+			<expression><![CDATA[" of " + $V{PAGE_NUMBER}]]></expression>
+		</element>
+		<element kind="textField" uuid="5d370110-0065-4c13-92bb-a8bf7b12d5d9" x="20" y="30" width="100" height="30" pattern="MMMMM dd, yyyy">
+			<expression><![CDATA[new java.text.SimpleDateFormat("d MMMM yyyy", java.util.Locale.ENGLISH).format(new java.util.Date())]]></expression>
+		</element>
+	</pageFooter>
+	<summary height="42" splitType="Stretch"/>
+</jasperReport>

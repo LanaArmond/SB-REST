@@ -1,7 +1,7 @@
 package br.com.javastudies.sbrest.file.exporter.impl;
 
 import br.com.javastudies.sbrest.data.dto.PersonDTO;
-import br.com.javastudies.sbrest.file.exporter.contract.FileExporter;
+import br.com.javastudies.sbrest.file.exporter.contract.PersonExporter;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.springframework.core.io.ByteArrayResource;
@@ -14,10 +14,10 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 @Component
-public class CsvExporter implements FileExporter {
+public class CsvExporter implements PersonExporter {
 
     @Override
-    public Resource exportFile(List<PersonDTO> people) throws Exception {
+    public Resource exportPerson(List<PersonDTO> people) throws Exception {
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         OutputStreamWriter writer = new OutputStreamWriter(outputStream, StandardCharsets.UTF_8);
@@ -41,6 +41,11 @@ public class CsvExporter implements FileExporter {
         }
 
         return new ByteArrayResource(outputStream.toByteArray());
+    }
+
+    @Override
+    public Resource exportPerson(PersonDTO person) throws Exception {
+        return null;
     }
 
 }

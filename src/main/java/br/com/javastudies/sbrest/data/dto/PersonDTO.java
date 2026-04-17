@@ -1,9 +1,13 @@
 package br.com.javastudies.sbrest.data.dto;
 
+import br.com.javastudies.sbrest.model.Book;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.*;
 import org.springframework.hateoas.RepresentationModel;
 import org.springframework.hateoas.server.core.Relation;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.Objects;
 
 @Relation(collectionRelation = "people")
@@ -18,6 +22,12 @@ public class PersonDTO extends RepresentationModel<PersonDTO> implements Seriali
     private String address;
     private String gender;
     private Boolean enabled;
+
+    private String profileUrl;
+    private String photoUrl;
+
+    @JsonIgnore
+    private List<Book> books;
 
     public PersonDTO() { }
 
@@ -37,6 +47,7 @@ public class PersonDTO extends RepresentationModel<PersonDTO> implements Seriali
         this.firstName = firstName;
     }
 
+    @JsonIgnore
     public String getLastName() {
         return lastName;
     }
@@ -65,15 +76,43 @@ public class PersonDTO extends RepresentationModel<PersonDTO> implements Seriali
 
     public void setEnabled(Boolean enabled) { this.enabled = enabled; }
 
+    public String getName() {
+        return (firstName != null ? firstName : "") + (lastName != null ? " " + lastName : "");
+    }
+
+    public String getProfileUrl() {
+        return profileUrl;
+    }
+
+    public void setProfileUrl(String profileUrl) {
+        this.profileUrl = profileUrl;
+    }
+
+    public String getPhotoUrl() {
+        return photoUrl;
+    }
+
+    public void setPhotoUrl(String photoUrl) {
+        this.photoUrl = photoUrl;
+    }
+
+    public List<Book> getBooks() {
+        return books;
+    }
+
+    public void setBooks(List<Book> books) {
+        this.books = books;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (!(o instanceof PersonDTO personDTO)) return false;
         if (!super.equals(o)) return false;
-        return Objects.equals(getId(), personDTO.getId()) && Objects.equals(getFirstName(), personDTO.getFirstName()) && Objects.equals(getLastName(), personDTO.getLastName()) && Objects.equals(getAddress(), personDTO.getAddress()) && Objects.equals(getGender(), personDTO.getGender()) && Objects.equals(getEnabled(), personDTO.getEnabled());
+        return Objects.equals(getId(), personDTO.getId()) && Objects.equals(getFirstName(), personDTO.getFirstName()) && Objects.equals(getLastName(), personDTO.getLastName()) && Objects.equals(getAddress(), personDTO.getAddress()) && Objects.equals(getGender(), personDTO.getGender()) && Objects.equals(getEnabled(), personDTO.getEnabled()) && Objects.equals(getProfileUrl(), personDTO.getProfileUrl()) && Objects.equals(getPhotoUrl(), personDTO.getPhotoUrl()) && Objects.equals(getBooks(), personDTO.getBooks());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), getId(), getFirstName(), getLastName(), getAddress(), getGender(), getEnabled());
+        return Objects.hash(super.hashCode(), getId(), getFirstName(), getLastName(), getAddress(), getGender(), getEnabled(), getProfileUrl(), getPhotoUrl(), getBooks());
     }
 }
