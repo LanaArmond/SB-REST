@@ -21,11 +21,7 @@ public class PersonDTO implements Serializable {
 
     private String profileUrl;
     private String photoUrl;
-
-    @JsonIgnore
     private List<Book> books;
-
-    public PersonDTO() { }
 
     public Long getId() {
         return id;

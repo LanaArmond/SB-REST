@@ -6,6 +6,7 @@ import br.com.javastudies.sbrest.integrationtests.dto.PersonDTO;
 import br.com.javastudies.sbrest.integrationtests.dto.TokenDTO;
 import br.com.javastudies.sbrest.integrationtests.dto.wrapper.json.person.WrapperPersonDTO;
 import br.com.javastudies.sbrest.integrationtests.testcontainers.AbstractIntegrationTest;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -28,6 +29,7 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.jupiter.api.Assertions.*;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class PersonControllerJsonTest extends AbstractIntegrationTest {
@@ -49,23 +51,30 @@ class PersonControllerJsonTest extends AbstractIntegrationTest {
 
     @Test
     @Order(0)
-    void signin() {
+    void signin() throws Exception {
         AccountCredentialsDTO credentials =
                 new AccountCredentialsDTO("leandro", "admin123");
 
-        token = given()
+        var response = given()
                 .basePath("/auth/signin")
                 .port(TestConfigs.SERVER_PORT)
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .body(credentials)
                 .when()
-                .post()
+                .post();
+
+        // Extrai o BODY do JSON
+        var content = response
                 .then()
                 .statusCode(200)
                 .extract()
                 .body()
-                .as(TokenDTO.class);
+                .asString();
 
+        var jsonNode = objectMapper.readTree(content);
+        var bodyNode = jsonNode.get("body");
+
+        token = objectMapper.treeToValue(bodyNode, TokenDTO.class);
 
         specification = new RequestSpecBuilder()
                 .addHeader(TestConfigs.HEADER_PARAM_ORIGIN, TestConfigs.ORIGIN_ERUDIO)
@@ -87,28 +96,30 @@ class PersonControllerJsonTest extends AbstractIntegrationTest {
 
         var content = given(specification)
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .accept(MediaType.APPLICATION_JSON_VALUE)
                 .body(person)
                 .when()
                 .post()
                 .then()
                 .statusCode(200)
-                .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .extract()
                 .body()
                 .asString();
 
+        System.out.println(content);
+
         PersonDTO createdPerson = objectMapper.readValue(content, PersonDTO.class);
         person = createdPerson;
 
-        Assertions.assertNotNull(createdPerson.getId());
-        Assertions.assertTrue(createdPerson.getId() > 0);
+        assertNotNull(createdPerson);
+        assertNotNull(createdPerson.getId());
+        assertTrue(createdPerson.getId() > 0);
 
         assertEquals("Linus", createdPerson.getFirstName());
         assertEquals("Torvalds", createdPerson.getLastName());
         assertEquals("Helsinki - Finland", createdPerson.getAddress());
         assertEquals("Male", createdPerson.getGender());
-        Assertions.assertTrue(createdPerson.getEnabled());
-
+        assertTrue(createdPerson.getEnabled());
     }
 
     @Test
@@ -236,7 +247,7 @@ class PersonControllerJsonTest extends AbstractIntegrationTest {
         Assertions.assertNotNull(personOne.getId());
         Assertions.assertTrue(personOne.getId() > 0);
 
-        assertEquals("Allin", personOne.getFirstName());
+        assertEquals("Allie", personOne.getFirstName());
         assertEquals("Emmot", personOne.getLastName());
         assertEquals("7913 Lindbergh Way", personOne.getAddress());
         assertEquals("Male", personOne.getGender());

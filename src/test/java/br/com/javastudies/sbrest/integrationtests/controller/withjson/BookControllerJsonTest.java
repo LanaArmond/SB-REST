@@ -45,23 +45,32 @@ class BookControllerJsonTest extends AbstractIntegrationTest {
 
     @Test
     @Order(0)
-    void signin() {
+    void signin() throws Exception {
         AccountCredentialsDTO credentials =
                 new AccountCredentialsDTO("leandro", "admin123");
 
-        token = given()
+        var response = given()
                 .basePath("/auth/signin")
                 .port(TestConfigs.SERVER_PORT)
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .body(credentials)
                 .when()
-                .post()
+                .post();
+
+        response.then().log().all();
+
+        // Extrai o BODY do JSON
+        var content = response
                 .then()
                 .statusCode(200)
                 .extract()
                 .body()
-                .as(TokenDTO.class);
+                .asString();
 
+        var jsonNode = objectMapper.readTree(content);
+        var bodyNode = jsonNode.get("body");
+
+        token = objectMapper.treeToValue(bodyNode, TokenDTO.class);
 
         specification = new RequestSpecBuilder()
                 .addHeader(TestConfigs.HEADER_PARAM_ORIGIN, TestConfigs.ORIGIN_ERUDIO)

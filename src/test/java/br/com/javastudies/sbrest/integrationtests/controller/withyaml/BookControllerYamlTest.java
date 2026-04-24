@@ -15,6 +15,7 @@ import io.restassured.filter.log.LogDetail;
 import io.restassured.filter.log.RequestLoggingFilter;
 import io.restassured.filter.log.ResponseLoggingFilter;
 import io.restassured.http.ContentType;
+import io.restassured.internal.mapping.ObjectMapperDeserializationContextImpl;
 import io.restassured.specification.RequestSpecification;
 import org.junit.jupiter.api.*;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -49,41 +50,51 @@ class BookControllerYamlTest extends AbstractIntegrationTest {
 
     @Test
     @Order(0)
-    void signin() throws JsonProcessingException {
+    void signin() throws Exception {
         AccountCredentialsDTO credentials =
                 new AccountCredentialsDTO("leandro", "admin123");
 
-        token = given()
-                .config(
-                        RestAssuredConfig.config()
-                                .encoderConfig(
-                                        EncoderConfig.encoderConfig().
-                                                encodeContentTypeAs(MediaType.APPLICATION_YAML_VALUE, ContentType.TEXT))
-                )
+        var response = given()
+                .config(RestAssuredConfig.config()
+                        .encoderConfig(EncoderConfig.encoderConfig()
+                                .encodeContentTypeAs(MediaType.APPLICATION_YAML_VALUE, ContentType.TEXT)))
                 .basePath("/auth/signin")
                 .port(TestConfigs.SERVER_PORT)
                 .contentType(MediaType.APPLICATION_YAML_VALUE)
                 .accept(MediaType.APPLICATION_YAML_VALUE)
                 .body(credentials, objectMapper)
                 .when()
-                .post()
-                .then()
+                .post();
+
+        response.then().log().all();
+
+        // 1. Get raw YAML string
+        String yamlString = response.then()
                 .statusCode(200)
                 .extract()
                 .body()
-                .as(TokenDTO.class, objectMapper);
+                .asString();
+
+        // 2. Parse the envelope with Jackson (using YAMLFactory inside YAMLMapper)
+        com.fasterxml.jackson.databind.JsonNode root = objectMapper
+                .getMapper()                         // expose the Jackson mapper inside YAMLMapper
+                .readTree(yamlString);
+
+        // 3. Extract the "body" node and convert it to TokenDTO
+        token = objectMapper.getMapper()
+                .treeToValue(root.get("body"), TokenDTO.class);
 
         specification = new RequestSpecBuilder()
                 .addHeader(TestConfigs.HEADER_PARAM_ORIGIN, TestConfigs.ORIGIN_ERUDIO)
-                .addHeader(TestConfigs.HEADER_PARAM_AUTHORIZATION, "Bearer " + token.getRefreshToken())
+                .addHeader(TestConfigs.HEADER_PARAM_AUTHORIZATION, "Bearer " + token.getAccessToken())
                 .setBasePath("/api/book")
                 .setPort(TestConfigs.SERVER_PORT)
                 .addFilter(new RequestLoggingFilter(LogDetail.ALL))
                 .addFilter(new ResponseLoggingFilter(LogDetail.ALL))
                 .build();
 
-        assertNotNull(token.getAccessToken());
-        assertNotNull(token.getRefreshToken());
+        Assertions.assertNotNull(token.getAccessToken());
+        Assertions.assertNotNull(token.getRefreshToken());
     }
 
     @Test

@@ -1,11 +1,13 @@
 package br.com.javastudies.sbrest.integrationtests.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.Objects;
 
 @XmlRootElement
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class TokenDTO implements Serializable {
 
     private static final long serialVersionUID = 1L;

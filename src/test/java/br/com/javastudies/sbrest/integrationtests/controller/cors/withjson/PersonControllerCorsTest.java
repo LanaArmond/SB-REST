@@ -43,22 +43,39 @@ class PersonControllerCorsTest extends AbstractIntegrationTest {
 
     @Test
     @Order(0)
-    void signin() {
+    void signin() throws Exception {
         AccountCredentialsDTO credentials =
                 new AccountCredentialsDTO("leandro", "admin123");
 
-        token = given()
+        var response = given()
                 .basePath("/auth/signin")
                 .port(TestConfigs.SERVER_PORT)
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .body(credentials)
                 .when()
-                .post()
+                .post();
+
+        // Extrai o BODY do JSON
+        var content = response
                 .then()
                 .statusCode(200)
                 .extract()
                 .body()
-                .as(TokenDTO.class);
+                .asString();
+
+        var jsonNode = objectMapper.readTree(content);
+        var bodyNode = jsonNode.get("body");
+
+        token = objectMapper.treeToValue(bodyNode, TokenDTO.class);
+
+        specification = new RequestSpecBuilder()
+                .addHeader(TestConfigs.HEADER_PARAM_ORIGIN, TestConfigs.ORIGIN_ERUDIO)
+                .addHeader(TestConfigs.HEADER_PARAM_AUTHORIZATION, "Bearer " + token.getAccessToken())
+                .setBasePath("/api/person")
+                .setPort(TestConfigs.SERVER_PORT)
+                .addFilter(new RequestLoggingFilter(LogDetail.ALL))
+                .addFilter(new ResponseLoggingFilter(LogDetail.ALL))
+                .build();
 
         Assertions.assertNotNull(token.getAccessToken());
         Assertions.assertNotNull(token.getRefreshToken());
@@ -68,20 +85,16 @@ class PersonControllerCorsTest extends AbstractIntegrationTest {
     @Order(1)
     void create() throws JsonProcessingException {
         mockPerson();
-        specification = new RequestSpecBuilder()
-                .addHeader(TestConfigs.HEADER_PARAM_ORIGIN, TestConfigs.ORIGIN_ERUDIO)
-                .addHeader(TestConfigs.HEADER_PARAM_AUTHORIZATION, "Bearer " + token.getAccessToken())
-                    .setBasePath("/api/person")
-                .setPort(TestConfigs.SERVER_PORT)
-                    .addFilter(new RequestLoggingFilter(LogDetail.ALL))
-                    .addFilter(new ResponseLoggingFilter(LogDetail.ALL))
-                .build();
 
-        var content = given(specification)
+        var response = given(specification)
             .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .body(person)
             .when()
-                .post()
+                .post();
+
+        response.then().log().all();
+
+        var content = response
             .then()
                 .statusCode(200)
             .extract()

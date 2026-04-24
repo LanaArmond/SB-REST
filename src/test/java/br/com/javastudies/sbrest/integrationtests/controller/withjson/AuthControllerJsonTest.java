@@ -4,6 +4,9 @@ import br.com.javastudies.sbrest.config.TestConfigs;
 import br.com.javastudies.sbrest.integrationtests.dto.AccountCredentialsDTO;
 import br.com.javastudies.sbrest.integrationtests.dto.TokenDTO;
 import br.com.javastudies.sbrest.integrationtests.testcontainers.AbstractIntegrationTest;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.*;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
@@ -15,30 +18,45 @@ import static org.junit.Assert.assertNotNull;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class AuthControllerJsonTest extends AbstractIntegrationTest {
 
+    private static ObjectMapper objectMapper;
     private static TokenDTO token;
 
     @BeforeAll
     static void setUp() {
+        objectMapper = new ObjectMapper();
+        objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+
         token = new TokenDTO();
     }
 
     @Test
     @Order(1)
-    void signIn() {
-        AccountCredentialsDTO credentials = new AccountCredentialsDTO("leandro", "admin123");
+    void signIn() throws JsonProcessingException {
+        AccountCredentialsDTO credentials =
+                new AccountCredentialsDTO("leandro", "admin123");
 
-        token = given()
-                .basePath("/auth/sign")
-                    .port(TestConfigs.SERVER_PORT)
-                    .contentType(MediaType.APPLICATION_JSON_VALUE)
+        var response = given()
+                .basePath("/auth/signin")
+                .port(TestConfigs.SERVER_PORT)
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .body(credentials)
-                    .when()
-                .post()
-                    .then()
-                    .statusCode(200)
-                        .extract()
-                        .body()
-                        .as(TokenDTO.class);
+                .when()
+                .post();
+
+        response.then().log().all();
+
+        // Extrai o BODY do JSON
+        var content = response
+                .then()
+                .statusCode(200)
+                .extract()
+                .body()
+                .asString();
+
+        var jsonNode = objectMapper.readTree(content);
+        var bodyNode = jsonNode.get("body");
+
+        token = objectMapper.treeToValue(bodyNode, TokenDTO.class);
 
         Assertions.assertNotNull(token.getAccessToken());
         Assertions.assertNotNull(token.getRefreshToken());

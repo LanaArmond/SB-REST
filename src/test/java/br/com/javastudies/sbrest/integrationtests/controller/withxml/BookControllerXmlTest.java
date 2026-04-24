@@ -45,25 +45,32 @@ class BookControllerXmlTest extends AbstractIntegrationTest {
 
     @Test
     @Order(0)
-    void signin() throws JsonProcessingException {
+    void signin() throws Exception {
         AccountCredentialsDTO credentials =
                 new AccountCredentialsDTO("leandro", "admin123");
 
-        var content = given()
+        var response = given()
                 .basePath("/auth/signin")
                 .port(TestConfigs.SERVER_PORT)
                 .contentType(MediaType.APPLICATION_XML_VALUE)
                 .accept(MediaType.APPLICATION_XML_VALUE)
                 .body(credentials)
                 .when()
-                .post()
+                .post();
+
+        response.then().log().all();
+
+        var content = response
                 .then()
                 .statusCode(200)
                 .extract()
                 .body()
                 .asString();
 
-        token = objectMapper.readValue(content, TokenDTO.class);
+        var xml = objectMapper.readTree(content);
+        var bodyNode = xml.get("body");
+
+        token = objectMapper.treeToValue(bodyNode, TokenDTO.class);
 
         specification = new RequestSpecBuilder()
                 .addHeader(TestConfigs.HEADER_PARAM_ORIGIN, TestConfigs.ORIGIN_ERUDIO)
@@ -74,9 +81,8 @@ class BookControllerXmlTest extends AbstractIntegrationTest {
                 .addFilter(new ResponseLoggingFilter(LogDetail.ALL))
                 .build();
 
-
-        assertNotNull(token.getAccessToken());
-        assertNotNull(token.getRefreshToken());
+        Assertions.assertNotNull(token.getAccessToken());
+        Assertions.assertNotNull(token.getRefreshToken());
     }
 
 
