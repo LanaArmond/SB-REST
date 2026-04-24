@@ -3,7 +3,6 @@ package br.com.javastudies.sbrest.integrationtests.dto;
 import br.com.javastudies.sbrest.model.Book;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.xml.bind.annotation.XmlRootElement;
-
 import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
@@ -48,9 +47,7 @@ public class PersonDTO implements Serializable {
         return lastName;
     }
 
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
-    }
+    public void setLastName(String lastName) { this.lastName = lastName; }
 
     public String getAddress() {
         return address;

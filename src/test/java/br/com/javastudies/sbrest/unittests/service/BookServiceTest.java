@@ -7,7 +7,6 @@ import br.com.javastudies.sbrest.repository.BookRepository;
 import br.com.javastudies.sbrest.service.BookService;
 import br.com.javastudies.sbrest.unittests.mapper.mocks.MockBook;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -15,20 +14,25 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.Link;
+import org.springframework.hateoas.PagedModel;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
-import static org.mockito.internal.verification.VerificationModeFactory.times;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @ExtendWith(MockitoExtension.class)
-class BookServiceTest {
+class BookServicesTest {
 
     MockBook input;
 
@@ -38,6 +42,10 @@ class BookServiceTest {
     @Mock
     BookRepository repository;
 
+
+    @Mock
+    PagedResourcesAssembler<BookDTO> assembler;
+
     @BeforeEach
     void setUp() {
         input = new MockBook();
@@ -46,6 +54,7 @@ class BookServiceTest {
 
     @Test
     void findById() {
+
         Book book = input.mockEntity(1);
         book.setId(1L);
         when(repository.findById(1L)).thenReturn(Optional.of(book));
@@ -56,34 +65,52 @@ class BookServiceTest {
         assertNotNull(result.getId());
         assertNotNull(result.getLinks());
 
-        // Teste HATEOAS findById
-        assertNotNull(result.getLinks().stream().anyMatch(link -> link.getRel().value().equals("self") && link.getHref().endsWith("/api/book/1") && link.getType().equals("GET")));
+        assertNotNull(result.getLinks().stream()
+                .anyMatch(link -> link.getRel().value().equals("self")
+                        && link.getHref().endsWith("/api/book/1")
+                        && link.getType().equals("GET")
+                ));
 
-        // Teste HATEOAS findAll
-        assertNotNull(result.getLinks().stream().anyMatch(link -> link.getRel().value().equals("findAll") && link.getHref().endsWith("/api/book") && link.getType().equals("GET")));
+        assertNotNull(result.getLinks().stream()
+                .anyMatch(link -> link.getRel().value().equals("findAll")
+                        && link.getHref().endsWith("/api/book")
+                        && link.getType().equals("GET")
+                )
+        );
 
-        // Teste HATEOAS create
-        assertNotNull(result.getLinks().stream().anyMatch(link -> link.getRel().value().equals("create") && link.getHref().endsWith("/api/book") && link.getType().equals("POST")));
+        assertNotNull(result.getLinks().stream()
+                .anyMatch(link -> link.getRel().value().equals("create")
+                        && link.getHref().endsWith("/api/book")
+                        && link.getType().equals("POST")
+                )
+        );
 
-        // Teste HATEOAS update
-        assertNotNull(result.getLinks().stream().anyMatch(link -> link.getRel().value().equals("update") && link.getHref().endsWith("/api/book") && link.getType().equals("PUT")));
+        assertNotNull(result.getLinks().stream()
+                .anyMatch(link -> link.getRel().value().equals("update")
+                        && link.getHref().endsWith("/api/book")
+                        && link.getType().equals("PUT")
+                )
+        );
 
-        // Teste HATEOAS delete
-        assertNotNull(result.getLinks().stream().anyMatch(link -> link.getRel().value().equals("delete") && link.getHref().endsWith("/api/book/1") && link.getType().equals("DELETE")));
+        assertNotNull(result.getLinks().stream()
+                .anyMatch(link -> link.getRel().value().equals("delete")
+                        && link.getHref().endsWith("/api/book/1")
+                        && link.getType().equals("DELETE")
+                )
+        );
 
-        // Teste de validade segundo o mocks.MockBook
         assertEquals("Some Author1", result.getAuthor());
-        assertNotNull(result.getLaunchDate());
         assertEquals(25D, result.getPrice());
         assertEquals("Some Title1", result.getTitle());
+        assertNotNull(result.getLaunchDate());
     }
 
     @Test
     void create() {
-        Book entity = input.mockEntity(1);
-        entity.setId(1L);
 
         BookDTO dto = input.mockDTO(1);
+
+        Book entity = input.mockEntity(1);
 
         when(repository.save(any(Book.class))).thenReturn(entity);
 
@@ -93,34 +120,54 @@ class BookServiceTest {
         assertNotNull(result.getId());
         assertNotNull(result.getLinks());
 
-        // Teste HATEOAS findById
-        assertNotNull(result.getLinks().stream().anyMatch(link -> link.getRel().value().equals("self") && link.getHref().endsWith("/api/book/1") && link.getType().equals("GET")));
+        assertNotNull(result.getLinks().stream()
+                .anyMatch(link -> link.getRel().value().equals("self")
+                        && link.getHref().endsWith("/api/book/1")
+                        && link.getType().equals("GET")
+                ));
 
-        // Teste HATEOAS findAll
-        assertNotNull(result.getLinks().stream().anyMatch(link -> link.getRel().value().equals("findAll") && link.getHref().endsWith("/api/book") && link.getType().equals("GET")));
+        assertNotNull(result.getLinks().stream()
+                .anyMatch(link -> link.getRel().value().equals("findAll")
+                        && link.getHref().endsWith("/api/book")
+                        && link.getType().equals("GET")
+                )
+        );
 
-        // Teste HATEOAS create
-        assertNotNull(result.getLinks().stream().anyMatch(link -> link.getRel().value().equals("create") && link.getHref().endsWith("/api/book") && link.getType().equals("POST")));
+        assertNotNull(result.getLinks().stream()
+                .anyMatch(link -> link.getRel().value().equals("create")
+                        && link.getHref().endsWith("/api/book")
+                        && link.getType().equals("POST")
+                )
+        );
 
-        // Teste HATEOAS update
-        assertNotNull(result.getLinks().stream().anyMatch(link -> link.getRel().value().equals("update") && link.getHref().endsWith("/api/book") && link.getType().equals("PUT")));
+        assertNotNull(result.getLinks().stream()
+                .anyMatch(link -> link.getRel().value().equals("update")
+                        && link.getHref().endsWith("/api/book")
+                        && link.getType().equals("PUT")
+                )
+        );
 
-        // Teste HATEOAS delete
-        assertNotNull(result.getLinks().stream().anyMatch(link -> link.getRel().value().equals("delete") && link.getHref().endsWith("/api/book/1") && link.getType().equals("DELETE")));
+        assertNotNull(result.getLinks().stream()
+                .anyMatch(link -> link.getRel().value().equals("delete")
+                        && link.getHref().endsWith("/api/book/1")
+                        && link.getType().equals("DELETE")
+                )
+        );
 
-        // Teste de validade segundo o mocks.MockBook
         assertEquals("Some Author1", result.getAuthor());
-        assertNotNull(result.getLaunchDate());
         assertEquals(25D, result.getPrice());
         assertEquals("Some Title1", result.getTitle());
+        assertNotNull(result.getLaunchDate());
     }
 
     @Test
     void testCreateWithNullBook() {
         Exception exception = assertThrows(RequiredObjectIsNullException.class,
-                () -> { service.create(null); }
-        );
-        String expectedMessage = "It is no allowed to persist a null object!";
+                () -> {
+                    service.create(null);
+                });
+
+        String expectedMessage = "It is not allowed to persist a null object!";
         String actualMessage = exception.getMessage();
 
         assertTrue(actualMessage.contains(expectedMessage));
@@ -143,34 +190,54 @@ class BookServiceTest {
         assertNotNull(result.getId());
         assertNotNull(result.getLinks());
 
-        // Teste HATEOAS findById
-        assertNotNull(result.getLinks().stream().anyMatch(link -> link.getRel().value().equals("self") && link.getHref().endsWith("/api/book/1") && link.getType().equals("GET")));
+        assertNotNull(result.getLinks().stream()
+                .anyMatch(link -> link.getRel().value().equals("self")
+                        && link.getHref().endsWith("/api/book/1")
+                        && link.getType().equals("GET")
+                ));
 
-        // Teste HATEOAS findAll
-        assertNotNull(result.getLinks().stream().anyMatch(link -> link.getRel().value().equals("findAll") && link.getHref().endsWith("/api/book") && link.getType().equals("GET")));
+        assertNotNull(result.getLinks().stream()
+                .anyMatch(link -> link.getRel().value().equals("findAll")
+                        && link.getHref().endsWith("/api/book")
+                        && link.getType().equals("GET")
+                )
+        );
 
-        // Teste HATEOAS create
-        assertNotNull(result.getLinks().stream().anyMatch(link -> link.getRel().value().equals("create") && link.getHref().endsWith("/api/book") && link.getType().equals("POST")));
+        assertNotNull(result.getLinks().stream()
+                .anyMatch(link -> link.getRel().value().equals("create")
+                        && link.getHref().endsWith("/api/book")
+                        && link.getType().equals("POST")
+                )
+        );
 
-        // Teste HATEOAS update
-        assertNotNull(result.getLinks().stream().anyMatch(link -> link.getRel().value().equals("update") && link.getHref().endsWith("/api/book") && link.getType().equals("PUT")));
+        assertNotNull(result.getLinks().stream()
+                .anyMatch(link -> link.getRel().value().equals("update")
+                        && link.getHref().endsWith("/api/book")
+                        && link.getType().equals("PUT")
+                )
+        );
 
-        // Teste HATEOAS delete
-        assertNotNull(result.getLinks().stream().anyMatch(link -> link.getRel().value().equals("delete") && link.getHref().endsWith("/api/book/1") && link.getType().equals("DELETE")));
+        assertNotNull(result.getLinks().stream()
+                .anyMatch(link -> link.getRel().value().equals("delete")
+                        && link.getHref().endsWith("/api/book/1")
+                        && link.getType().equals("DELETE")
+                )
+        );
 
-        // Teste de validade segundo o mocks.MockBook
         assertEquals("Some Author1", result.getAuthor());
-        assertNotNull(result.getLaunchDate());
         assertEquals(25D, result.getPrice());
         assertEquals("Some Title1", result.getTitle());
+        assertNotNull(result.getLaunchDate());
     }
 
     @Test
     void testUpdateWithNullBook() {
         Exception exception = assertThrows(RequiredObjectIsNullException.class,
-                () -> { service.update(null); }
-                );
-        String expectedMessage = "It is no allowed to persist a null object!";
+                () -> {
+                    service.update(null);
+                });
+
+        String expectedMessage = "It is not allowed to persist a null object!";
         String actualMessage = exception.getMessage();
 
         assertTrue(actualMessage.contains(expectedMessage));
@@ -189,97 +256,89 @@ class BookServiceTest {
     }
 
     @Test
-    @Disabled("REASON: Still under development")
     void findAll() {
-        List<Book> list = input.mockEntityList();
-        when(repository.findAll()).thenReturn(list);
-        List<BookDTO> books = new ArrayList<>();
+        // Mocking repository access
+        List<Book> mockEntityList = input.mockEntityList();
+        Page<Book> mockPage = new PageImpl<>(mockEntityList);
+        when(repository.findAll(any(Pageable.class))).thenReturn(mockPage);
+
+        List<BookDTO> mockDtoList = input.mockDTOList();
+
+        // Mocking assembler
+        // assembler.toModel(booksWithLinks, findAllLink);
+        List<EntityModel<BookDTO>> entityModels = mockDtoList.stream()
+                .map(EntityModel::of)
+                .collect(Collectors.toList());
+
+        PagedModel.PageMetadata pageMetadata = new PagedModel.PageMetadata(
+                mockPage.getSize(),
+                mockPage.getNumber(),
+                mockPage.getTotalElements(),
+                mockPage.getTotalPages()
+        );
+
+        PagedModel<EntityModel<BookDTO>> mockPagedModel = PagedModel.of(entityModels, pageMetadata);
+        when(assembler.toModel(any(Page.class), any(Link.class))).thenReturn(mockPagedModel);
+
+
+        // Executing fid all
+        PagedModel<EntityModel<BookDTO>> result = service.findAll(PageRequest.of(0, 14));
+
+        List<BookDTO> books = result.getContent()
+                .stream()
+                .map(EntityModel::getContent)
+                .collect(Collectors.toList());
 
         assertNotNull(books);
         assertEquals(14, books.size());
 
-        // Teste 01
-        var bookOne = books.get(1);
+        validateIndividualBook(books.get(1), 1);
+        validateIndividualBook(books.get(4), 4);
+        validateIndividualBook(books.get(7), 7);
+    }
 
-        assertNotNull(bookOne);
-        assertNotNull(bookOne.getId());
-        assertNotNull(bookOne.getLinks());
+    private static void validateIndividualBook(BookDTO book, int i) {
+        assertNotNull(book);
+        assertNotNull(book.getId());
+        assertNotNull(book.getLinks());
 
-        // Teste HATEOAS findById
-        assertNotNull(bookOne.getLinks().stream().anyMatch(link -> link.getRel().value().equals("self") && link.getHref().endsWith("/api/book/1") && link.getType().equals("GET")));
+        assertNotNull(book.getLinks().stream()
+                .anyMatch(link -> link.getRel().value().equals("self")
+                        && link.getHref().endsWith("/api/book/" + i)
+                        && link.getType().equals("GET")
+                ));
 
-        // Teste HATEOAS findAll
-        assertNotNull(bookOne.getLinks().stream().anyMatch(link -> link.getRel().value().equals("findAll") && link.getHref().endsWith("/api/book") && link.getType().equals("GET")));
+        assertNotNull(book.getLinks().stream()
+                .anyMatch(link -> link.getRel().value().equals("findAll")
+                        && link.getHref().endsWith("/api/book")
+                        && link.getType().equals("GET")
+                )
+        );
 
-        // Teste HATEOAS create
-        assertNotNull(bookOne.getLinks().stream().anyMatch(link -> link.getRel().value().equals("create") && link.getHref().endsWith("/api/book") && link.getType().equals("POST")));
+        assertNotNull(book.getLinks().stream()
+                .anyMatch(link -> link.getRel().value().equals("create")
+                        && link.getHref().endsWith("/api/book")
+                        && link.getType().equals("POST")
+                )
+        );
 
-        // Teste HATEOAS update
-        assertNotNull(bookOne.getLinks().stream().anyMatch(link -> link.getRel().value().equals("update") && link.getHref().endsWith("/api/book") && link.getType().equals("PUT")));
+        assertNotNull(book.getLinks().stream()
+                .anyMatch(link -> link.getRel().value().equals("update")
+                        && link.getHref().endsWith("/api/book")
+                        && link.getType().equals("PUT")
+                )
+        );
 
-        // Teste HATEOAS delete
-        assertNotNull(bookOne.getLinks().stream().anyMatch(link -> link.getRel().value().equals("delete") && link.getHref().endsWith("/api/book/1") && link.getType().equals("DELETE")));
+        assertNotNull(book.getLinks().stream()
+                .anyMatch(link -> link.getRel().value().equals("delete")
+                        && link.getHref().endsWith("/api/book/" + i)
+                        && link.getType().equals("DELETE")
+                )
+        );
 
-        // Teste de validade segundo o mocks.MockBook
-        assertEquals("Some Author1", bookOne.getAuthor());
-        assertNotNull(bookOne.getLaunchDate());
-        assertEquals(25D, bookOne.getPrice());
-        assertEquals("Some Title1", bookOne.getTitle());
-
-        // Teste 02
-        var bookFour = books.get(4);
-
-        assertNotNull(bookFour);
-        assertNotNull(bookFour.getId());
-        assertNotNull(bookFour.getLinks());
-
-        // Teste HATEOAS findById
-        assertNotNull(bookFour.getLinks().stream().anyMatch(link -> link.getRel().value().equals("self") && link.getHref().endsWith("/api/book/4") && link.getType().equals("GET")));
-
-        // Teste HATEOAS findAll
-        assertNotNull(bookFour.getLinks().stream().anyMatch(link -> link.getRel().value().equals("findAll") && link.getHref().endsWith("/api/book") && link.getType().equals("GET")));
-
-        // Teste HATEOAS create
-        assertNotNull(bookFour.getLinks().stream().anyMatch(link -> link.getRel().value().equals("create") && link.getHref().endsWith("/api/book") && link.getType().equals("POST")));
-
-        // Teste HATEOAS update
-        assertNotNull(bookFour.getLinks().stream().anyMatch(link -> link.getRel().value().equals("update") && link.getHref().endsWith("/api/book") && link.getType().equals("PUT")));
-
-        // Teste HATEOAS delete
-        assertNotNull(bookFour.getLinks().stream().anyMatch(link -> link.getRel().value().equals("delete") && link.getHref().endsWith("/api/book/4") && link.getType().equals("DELETE")));
-
-        // Teste de validade segundo o mocks.MockBook
-        assertEquals("Some Author4", bookFour.getAuthor());
-        assertNotNull(bookFour.getLaunchDate());
-        assertEquals(25D, bookFour.getPrice());
-        assertEquals("Some Title4", bookFour.getTitle());
-
-        // Teste 03
-        var bookSeven = books.get(7);
-
-        assertNotNull(bookSeven);
-        assertNotNull(bookSeven.getId());
-        assertNotNull(bookSeven.getLinks());
-
-        // Teste HATEOAS findById
-        assertNotNull(bookSeven.getLinks().stream().anyMatch(link -> link.getRel().value().equals("self") && link.getHref().endsWith("/api/book/4") && link.getType().equals("GET")));
-
-        // Teste HATEOAS findAll
-        assertNotNull(bookSeven.getLinks().stream().anyMatch(link -> link.getRel().value().equals("findAll") && link.getHref().endsWith("/api/book") && link.getType().equals("GET")));
-
-        // Teste HATEOAS create
-        assertNotNull(bookSeven.getLinks().stream().anyMatch(link -> link.getRel().value().equals("create") && link.getHref().endsWith("/api/book") && link.getType().equals("POST")));
-
-        // Teste HATEOAS update
-        assertNotNull(bookSeven.getLinks().stream().anyMatch(link -> link.getRel().value().equals("update") && link.getHref().endsWith("/api/book") && link.getType().equals("PUT")));
-
-        // Teste HATEOAS delete
-        assertNotNull(bookSeven.getLinks().stream().anyMatch(link -> link.getRel().value().equals("delete") && link.getHref().endsWith("/api/book/4") && link.getType().equals("DELETE")));
-
-        // Teste de validade segundo o mocks.MockBook
-        assertEquals("Some Author7", bookSeven.getAuthor());
-        assertNotNull(bookSeven.getLaunchDate());
-        assertEquals(25D, bookSeven.getPrice());
-        assertEquals("Some Title7", bookSeven.getTitle());
+        assertEquals("Some Author" + i, book.getAuthor());
+        assertEquals(25D, book.getPrice());
+        assertEquals("Some Title" + i, book.getTitle());
+        assertNotNull(book.getLaunchDate());
     }
 }

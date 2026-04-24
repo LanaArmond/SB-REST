@@ -3,7 +3,6 @@ package br.com.javastudies.sbrest.integrationtests.dto.wrapper.xml_yaml;
 import br.com.javastudies.sbrest.integrationtests.dto.PersonDTO;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
-
 import java.io.Serializable;
 import java.util.List;
 

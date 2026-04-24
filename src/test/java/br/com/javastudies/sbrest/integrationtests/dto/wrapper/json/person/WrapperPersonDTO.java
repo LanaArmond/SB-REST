@@ -1,7 +1,6 @@
 package br.com.javastudies.sbrest.integrationtests.dto.wrapper.json.person;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import java.io.Serializable;
 
 public class WrapperPersonDTO implements Serializable {

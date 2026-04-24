@@ -1,8 +1,6 @@
 package br.com.javastudies.sbrest.integrationtests.dto.wrapper.json.book;
 
-import br.com.javastudies.sbrest.integrationtests.dto.wrapper.json.book.BookEmbeddedDTO;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import java.io.Serializable;
 
 public class WrapperBookDTO implements Serializable {

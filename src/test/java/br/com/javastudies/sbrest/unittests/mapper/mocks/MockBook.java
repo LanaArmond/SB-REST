@@ -1,13 +1,14 @@
 package br.com.javastudies.sbrest.unittests.mapper.mocks;
 
-import br.com.javastudies.sbrest.data.dto.BookDTO;
-import br.com.javastudies.sbrest.model.Book;
-
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import br.com.javastudies.sbrest.data.dto.BookDTO;
+import br.com.javastudies.sbrest.model.Book;
+
 public class MockBook {
+
 
     public Book mockEntity() {
         return mockEntity(0);

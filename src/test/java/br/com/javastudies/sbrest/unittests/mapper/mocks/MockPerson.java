@@ -1,4 +1,5 @@
 package br.com.javastudies.sbrest.unittests.mapper.mocks;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -6,6 +7,7 @@ import br.com.javastudies.sbrest.data.dto.PersonDTO;
 import br.com.javastudies.sbrest.model.Person;
 
 public class MockPerson {
+
 
     public Person mockEntity() {
         return mockEntity(0);

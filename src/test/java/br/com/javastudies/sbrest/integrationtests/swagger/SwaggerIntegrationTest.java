@@ -4,7 +4,6 @@ import br.com.javastudies.sbrest.config.TestConfigs;
 import br.com.javastudies.sbrest.integrationtests.testcontainers.AbstractIntegrationTest;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
-
 import static io.restassured.RestAssured.given;
 import static junit.framework.TestCase.assertTrue;
 

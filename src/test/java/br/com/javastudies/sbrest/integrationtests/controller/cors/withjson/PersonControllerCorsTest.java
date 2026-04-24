@@ -1,7 +1,9 @@
 package br.com.javastudies.sbrest.integrationtests.controller.cors.withjson;
 
 import br.com.javastudies.sbrest.config.TestConfigs;
+import br.com.javastudies.sbrest.integrationtests.dto.AccountCredentialsDTO;
 import br.com.javastudies.sbrest.integrationtests.dto.PersonDTO;
+import br.com.javastudies.sbrest.integrationtests.dto.TokenDTO;
 import br.com.javastudies.sbrest.integrationtests.testcontainers.AbstractIntegrationTest;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -17,6 +19,7 @@ import org.springframework.http.MediaType;
 
 import static io.restassured.RestAssured.given;
 import static junit.framework.TestCase.assertTrue;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
@@ -25,13 +28,40 @@ class PersonControllerCorsTest extends AbstractIntegrationTest {
 
     private static RequestSpecification specification;
     private static ObjectMapper objectMapper;
+
     private static PersonDTO person;
+    private static TokenDTO token;
 
     @BeforeAll
     static void setUp() {
         objectMapper = new ObjectMapper();
         objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+
         person = new PersonDTO();
+        token = new TokenDTO();
+    }
+
+    @Test
+    @Order(0)
+    void signin() {
+        AccountCredentialsDTO credentials =
+                new AccountCredentialsDTO("leandro", "admin123");
+
+        token = given()
+                .basePath("/auth/signin")
+                .port(TestConfigs.SERVER_PORT)
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .body(credentials)
+                .when()
+                .post()
+                .then()
+                .statusCode(200)
+                .extract()
+                .body()
+                .as(TokenDTO.class);
+
+        Assertions.assertNotNull(token.getAccessToken());
+        Assertions.assertNotNull(token.getRefreshToken());
     }
 
     @Test
@@ -40,7 +70,8 @@ class PersonControllerCorsTest extends AbstractIntegrationTest {
         mockPerson();
         specification = new RequestSpecBuilder()
                 .addHeader(TestConfigs.HEADER_PARAM_ORIGIN, TestConfigs.ORIGIN_ERUDIO)
-                .setBasePath("/api/person")
+                .addHeader(TestConfigs.HEADER_PARAM_AUTHORIZATION, "Bearer " + token.getAccessToken())
+                    .setBasePath("/api/person")
                 .setPort(TestConfigs.SERVER_PORT)
                     .addFilter(new RequestLoggingFilter(LogDetail.ALL))
                     .addFilter(new ResponseLoggingFilter(LogDetail.ALL))
@@ -60,19 +91,19 @@ class PersonControllerCorsTest extends AbstractIntegrationTest {
         PersonDTO createdPerson = objectMapper.readValue(content, PersonDTO.class);
         person = createdPerson;
 
-        assertNotNull(createdPerson.getId());
-        assertNotNull(createdPerson.getFirstName());
-        assertNotNull(createdPerson.getLastName());
-        assertNotNull(createdPerson.getAddress());
-        assertNotNull(createdPerson.getGender());
+        Assertions.assertNotNull(createdPerson.getId());
+        Assertions.assertNotNull(createdPerson.getFirstName());
+        Assertions.assertNotNull(createdPerson.getLastName());
+        Assertions.assertNotNull(createdPerson.getAddress());
+        Assertions.assertNotNull(createdPerson.getGender());
 
-        assertTrue(createdPerson.getId() > 0);
+        Assertions.assertTrue(createdPerson.getId() > 0);
 
         assertEquals("Richard", createdPerson.getFirstName());
         assertEquals("Stallman", createdPerson.getLastName());
         assertEquals("New York City - New York - USA", createdPerson.getAddress());
         assertEquals("Male", createdPerson.getGender());
-        assertTrue(createdPerson.getEnabled());
+        Assertions.assertTrue(createdPerson.getEnabled());
     }
 
     @Test
@@ -81,7 +112,8 @@ class PersonControllerCorsTest extends AbstractIntegrationTest {
         mockPerson();
         specification = new RequestSpecBuilder()
                 .addHeader(TestConfigs.HEADER_PARAM_ORIGIN, TestConfigs.ORIGIN_SEMERU)
-                .setBasePath("/api/person")
+                .addHeader(TestConfigs.HEADER_PARAM_AUTHORIZATION, "Bearer " + token.getAccessToken())
+                    .setBasePath("/api/person")
                 .setPort(TestConfigs.SERVER_PORT)
                     .addFilter(new RequestLoggingFilter(LogDetail.ALL))
                     .addFilter(new ResponseLoggingFilter(LogDetail.ALL))
@@ -89,14 +121,14 @@ class PersonControllerCorsTest extends AbstractIntegrationTest {
 
         var content = given(specification)
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
-                .body(person)
+                    .body(person)
                 .when()
-                .post()
+                    .post()
                 .then()
-                .statusCode(403)
+                    .statusCode(403)
                 .extract()
-                .body()
-                .asString();
+                    .body()
+                        .asString();
 
         assertEquals("Invalid CORS request", content);
     }
@@ -106,39 +138,40 @@ class PersonControllerCorsTest extends AbstractIntegrationTest {
     void findById() throws JsonProcessingException {
         specification = new RequestSpecBuilder()
                 .addHeader(TestConfigs.HEADER_PARAM_ORIGIN, TestConfigs.ORIGIN_LOCAL)
-                .setBasePath("/api/person")
+                .addHeader(TestConfigs.HEADER_PARAM_AUTHORIZATION, "Bearer " + token.getAccessToken())
+                    .setBasePath("/api/person")
                 .setPort(TestConfigs.SERVER_PORT)
                     .addFilter(new RequestLoggingFilter(LogDetail.ALL))
                     .addFilter(new ResponseLoggingFilter(LogDetail.ALL))
                 .build();
 
         var content = given(specification)
-                .contentType(MediaType.APPLICATION_JSON_VALUE)
-                .pathParam("id", person.getId())
+                    .contentType(MediaType.APPLICATION_JSON_VALUE)
+                    .pathParam("id", person.getId())
                 .when()
-                .get("{id}")
+                    .get("{id}")
                 .then()
-                .statusCode(200)
+                    .statusCode(200)
                 .extract()
-                .body()
-                .asString();
+                    .body()
+                        .asString();
 
         PersonDTO createdPerson = objectMapper.readValue(content, PersonDTO.class);
         person = createdPerson;
 
-        assertNotNull(createdPerson.getId());
-        assertNotNull(createdPerson.getFirstName());
-        assertNotNull(createdPerson.getLastName());
-        assertNotNull(createdPerson.getAddress());
-        assertNotNull(createdPerson.getGender());
+        Assertions.assertNotNull(createdPerson.getId());
+        Assertions.assertNotNull(createdPerson.getFirstName());
+        Assertions.assertNotNull(createdPerson.getLastName());
+        Assertions.assertNotNull(createdPerson.getAddress());
+        Assertions.assertNotNull(createdPerson.getGender());
 
-        assertTrue(createdPerson.getId() > 0);
+        Assertions.assertTrue(createdPerson.getId() > 0);
 
         assertEquals("Richard", createdPerson.getFirstName());
         assertEquals("Stallman", createdPerson.getLastName());
         assertEquals("New York City - New York - USA", createdPerson.getAddress());
         assertEquals("Male", createdPerson.getGender());
-        assertTrue(createdPerson.getEnabled());
+        Assertions.assertTrue(createdPerson.getEnabled());
     }
 
     @Test
@@ -146,36 +179,25 @@ class PersonControllerCorsTest extends AbstractIntegrationTest {
     void findByIdWithWrongOrigin() throws JsonProcessingException {
         specification = new RequestSpecBuilder()
                 .addHeader(TestConfigs.HEADER_PARAM_ORIGIN, TestConfigs.ORIGIN_SEMERU)
-                .setBasePath("/api/person")
+                .addHeader(TestConfigs.HEADER_PARAM_AUTHORIZATION, "Bearer " + token.getAccessToken())
+                    .setBasePath("/api/person")
                 .setPort(TestConfigs.SERVER_PORT)
-                .addFilter(new RequestLoggingFilter(LogDetail.ALL))
-                .addFilter(new ResponseLoggingFilter(LogDetail.ALL))
+                    .addFilter(new RequestLoggingFilter(LogDetail.ALL))
+                    .addFilter(new ResponseLoggingFilter(LogDetail.ALL))
                 .build();
 
         var content = given(specification)
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
-                .pathParam("id", person.getId())
+                    .pathParam("id", person.getId())
                 .when()
-                .get("{id}")
+                    .get("{id}")
                 .then()
-                .statusCode(403)
+                    .statusCode(403)
                 .extract()
-                .body()
-                .asString();
+                    .body()
+                        .asString();
 
         assertEquals("Invalid CORS request", content);
-    }
-
-    @Test
-    void update() {
-    }
-
-    @Test
-    void delete() {
-    }
-
-    @Test
-    void findAll() {
     }
 
     private void mockPerson() {

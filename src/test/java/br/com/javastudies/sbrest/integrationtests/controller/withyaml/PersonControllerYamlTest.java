@@ -2,11 +2,12 @@ package br.com.javastudies.sbrest.integrationtests.controller.withyaml;
 
 import br.com.javastudies.sbrest.config.TestConfigs;
 import br.com.javastudies.sbrest.integrationtests.controller.withyaml.Mapper.YAMLMapper;
+import br.com.javastudies.sbrest.integrationtests.dto.AccountCredentialsDTO;
 import br.com.javastudies.sbrest.integrationtests.dto.PersonDTO;
+import br.com.javastudies.sbrest.integrationtests.dto.TokenDTO;
 import br.com.javastudies.sbrest.integrationtests.dto.wrapper.xml_yaml.PagedModelPerson;
 import br.com.javastudies.sbrest.integrationtests.testcontainers.AbstractIntegrationTest;
 import com.fasterxml.jackson.core.JsonProcessingException;
-
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.config.EncoderConfig;
 import io.restassured.config.RestAssuredConfig;
@@ -14,15 +15,22 @@ import io.restassured.filter.log.LogDetail;
 import io.restassured.filter.log.RequestLoggingFilter;
 import io.restassured.filter.log.ResponseLoggingFilter;
 import io.restassured.http.ContentType;
+import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
+import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.*;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.yaml.snakeyaml.Yaml;
 
 import java.util.List;
+import java.util.Map;
 
 import static io.restassured.RestAssured.given;
 import static junit.framework.TestCase.assertTrue;
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
@@ -30,59 +38,92 @@ import static org.junit.jupiter.api.Assertions.*;
 class PersonControllerYamlTest extends AbstractIntegrationTest {
 
     private static RequestSpecification specification;
-    private static YAMLMapper yamlMapper;
+    private static YAMLMapper objectMapper;
+
     private static PersonDTO person;
+    private static TokenDTO token;
 
     @BeforeAll
     static void setUp() {
-        yamlMapper = new YAMLMapper();
+        objectMapper = new YAMLMapper();
+
         person = new PersonDTO();
+        token = new TokenDTO();
+    }
+
+    @Test
+    @Order(0)
+    void signin() throws JsonProcessingException {
+        AccountCredentialsDTO credentials =
+                new AccountCredentialsDTO("leandro", "admin123");
+
+        token = given()
+                .config(
+                        RestAssuredConfig.config()
+                                .encoderConfig(
+                                        EncoderConfig.encoderConfig().
+                                                encodeContentTypeAs(MediaType.APPLICATION_YAML_VALUE, ContentType.TEXT))
+                )
+                .basePath("/auth/signin")
+                .port(TestConfigs.SERVER_PORT)
+                .contentType(MediaType.APPLICATION_YAML_VALUE)
+                .accept(MediaType.APPLICATION_YAML_VALUE)
+                .body(credentials, objectMapper)
+                .when()
+                .post()
+                .then()
+                .statusCode(200)
+                .extract()
+                .body()
+                .as(TokenDTO.class, objectMapper);
+
+        specification = new RequestSpecBuilder()
+                .addHeader(TestConfigs.HEADER_PARAM_ORIGIN, TestConfigs.ORIGIN_ERUDIO)
+                .addHeader(TestConfigs.HEADER_PARAM_AUTHORIZATION, "Bearer " + token.getRefreshToken())
+                .setBasePath("/api/person")
+                .setPort(TestConfigs.SERVER_PORT)
+                .addFilter(new RequestLoggingFilter(LogDetail.ALL))
+                .addFilter(new ResponseLoggingFilter(LogDetail.ALL))
+                .build();
+
+        assertNotNull(token.getAccessToken());
+        assertNotNull(token.getRefreshToken());
     }
 
     @Test
     @Order(1)
     void createTest() throws JsonProcessingException {
         mockPerson();
-        specification = new RequestSpecBuilder()
-                .addHeader(TestConfigs.HEADER_PARAM_ORIGIN, TestConfigs.ORIGIN_ERUDIO)
-                .setBasePath("/api/person")
-                .setPort(TestConfigs.SERVER_PORT)
-                    .addFilter(new RequestLoggingFilter(LogDetail.ALL))
-                    .addFilter(new ResponseLoggingFilter(LogDetail.ALL))
-                .build();
 
-        var createdPerson = given().config(RestAssuredConfig.config()
-                        .encoderConfig(
-                                EncoderConfig.encoderConfig().
-                                        encodeContentTypeAs(MediaType.APPLICATION_YAML_VALUE, ContentType.TEXT)
-                        )).spec(specification)
-            .contentType(MediaType.APPLICATION_YAML_VALUE)
-            .accept(MediaType.APPLICATION_YAML_VALUE)
-                .body(person, yamlMapper)
-            .when()
+        var createdPerson = given().config(
+                        RestAssuredConfig.config()
+                                .encoderConfig(
+                                        EncoderConfig.encoderConfig().
+                                                encodeContentTypeAs(MediaType.APPLICATION_YAML_VALUE, ContentType.TEXT))
+                ).spec(specification)
+                .contentType(MediaType.APPLICATION_YAML_VALUE)
+                .accept(MediaType.APPLICATION_YAML_VALUE)
+                .body(person, objectMapper)
+                .when()
                 .post()
-            .then()
+                .then()
                 .statusCode(200)
                 .contentType(MediaType.APPLICATION_YAML_VALUE)
-            .extract()
+                .extract()
                 .body()
-                    .as(PersonDTO.class, yamlMapper);
+                .as(PersonDTO.class, objectMapper);
 
         person = createdPerson;
 
         assertNotNull(createdPerson.getId());
-        assertNotNull(createdPerson.getFirstName());
-        assertNotNull(createdPerson.getLastName());
-        assertNotNull(createdPerson.getAddress());
-        assertNotNull(createdPerson.getGender());
-
         assertTrue(createdPerson.getId() > 0);
 
         assertEquals("Linus", createdPerson.getFirstName());
-        assertEquals("Torvarlds", createdPerson.getLastName());
+        assertEquals("Torvalds", createdPerson.getLastName());
         assertEquals("Helsinki - Finland", createdPerson.getAddress());
         assertEquals("Male", createdPerson.getGender());
         assertTrue(createdPerson.getEnabled());
+
     }
 
     @Test
@@ -90,33 +131,27 @@ class PersonControllerYamlTest extends AbstractIntegrationTest {
     void updateTest() throws JsonProcessingException {
         person.setLastName("Benedict Torvalds");
 
-        // Usa a specification do teste anterior
-
-        var createdPerson = given().config(RestAssuredConfig.config()
-                        .encoderConfig(
-                                EncoderConfig.encoderConfig().
-                                        encodeContentTypeAs(MediaType.APPLICATION_YAML_VALUE, ContentType.TEXT)
-                        )).spec(specification)
+        var createdPerson = given().config(
+                        RestAssuredConfig.config()
+                                .encoderConfig(
+                                        EncoderConfig.encoderConfig().
+                                                encodeContentTypeAs(MediaType.APPLICATION_YAML_VALUE, ContentType.TEXT))
+                ).spec(specification)
                 .contentType(MediaType.APPLICATION_YAML_VALUE)
                 .accept(MediaType.APPLICATION_YAML_VALUE)
-                    .body(person, yamlMapper)
+                .body(person, objectMapper)
                 .when()
-                    .put()
+                .put()
                 .then()
-                    .statusCode(200)
-                    .contentType(MediaType.APPLICATION_YAML_VALUE)
+                .statusCode(200)
+                .contentType(MediaType.APPLICATION_YAML_VALUE)
                 .extract()
-                    .body()
-                        .as(PersonDTO.class, yamlMapper);
+                .body()
+                .as(PersonDTO.class, objectMapper);
 
         person = createdPerson;
 
         assertNotNull(createdPerson.getId());
-        assertNotNull(createdPerson.getFirstName());
-        assertNotNull(createdPerson.getLastName());
-        assertNotNull(createdPerson.getAddress());
-        assertNotNull(createdPerson.getGender());
-
         assertTrue(createdPerson.getId() > 0);
 
         assertEquals("Linus", createdPerson.getFirstName());
@@ -124,39 +159,34 @@ class PersonControllerYamlTest extends AbstractIntegrationTest {
         assertEquals("Helsinki - Finland", createdPerson.getAddress());
         assertEquals("Male", createdPerson.getGender());
         assertTrue(createdPerson.getEnabled());
+
     }
 
     @Test
     @Order(3)
     void findByIdTest() throws JsonProcessingException {
 
-        // Usa a specification do teste anterior
-
-        var createdPerson = given().config(RestAssuredConfig.config()
-                        .encoderConfig(
-                                EncoderConfig.encoderConfig().
-                                        encodeContentTypeAs(MediaType.APPLICATION_YAML_VALUE, ContentType.TEXT)
-                        )).spec(specification)
+        var createdPerson = given().config(
+                        RestAssuredConfig.config()
+                                .encoderConfig(
+                                        EncoderConfig.encoderConfig().
+                                                encodeContentTypeAs(MediaType.APPLICATION_YAML_VALUE, ContentType.TEXT))
+                ).spec(specification)
                 .contentType(MediaType.APPLICATION_YAML_VALUE)
                 .accept(MediaType.APPLICATION_YAML_VALUE)
                 .pathParam("id", person.getId())
-            .when()
+                .when()
                 .get("{id}")
-            .then()
+                .then()
                 .statusCode(200)
                 .contentType(MediaType.APPLICATION_YAML_VALUE)
-            .extract()
+                .extract()
                 .body()
-                    .as(PersonDTO.class, yamlMapper);
+                .as(PersonDTO.class, objectMapper);
 
         person = createdPerson;
 
         assertNotNull(createdPerson.getId());
-        assertNotNull(createdPerson.getFirstName());
-        assertNotNull(createdPerson.getLastName());
-        assertNotNull(createdPerson.getAddress());
-        assertNotNull(createdPerson.getGender());
-
         assertTrue(createdPerson.getId() > 0);
 
         assertEquals("Linus", createdPerson.getFirstName());
@@ -168,34 +198,28 @@ class PersonControllerYamlTest extends AbstractIntegrationTest {
 
     @Test
     @Order(4)
-    void disablePersonTest() throws JsonProcessingException {
+    void disableTest() throws JsonProcessingException {
 
-        // Usa a specification do teste anterior
-
-        var createdPerson = given().config(RestAssuredConfig.config()
-                        .encoderConfig(
-                                EncoderConfig.encoderConfig().
-                                        encodeContentTypeAs(MediaType.APPLICATION_YAML_VALUE, ContentType.TEXT)
-                        )).spec(specification)
+        var createdPerson = given().config(
+                        RestAssuredConfig.config()
+                                .encoderConfig(
+                                        EncoderConfig.encoderConfig().
+                                                encodeContentTypeAs(MediaType.APPLICATION_YAML_VALUE, ContentType.TEXT))
+                ).spec(specification)
                 .accept(MediaType.APPLICATION_YAML_VALUE)
                 .pathParam("id", person.getId())
-            .when()
+                .when()
                 .patch("{id}")
-            .then()
+                .then()
                 .statusCode(200)
                 .contentType(MediaType.APPLICATION_YAML_VALUE)
-            .extract()
+                .extract()
                 .body()
-                    .as(PersonDTO.class, yamlMapper);
+                .as(PersonDTO.class, objectMapper);
 
         person = createdPerson;
 
         assertNotNull(createdPerson.getId());
-        assertNotNull(createdPerson.getFirstName());
-        assertNotNull(createdPerson.getLastName());
-        assertNotNull(createdPerson.getAddress());
-        assertNotNull(createdPerson.getGender());
-
         assertTrue(createdPerson.getId() > 0);
 
         assertEquals("Linus", createdPerson.getFirstName());
@@ -209,13 +233,11 @@ class PersonControllerYamlTest extends AbstractIntegrationTest {
     @Order(5)
     void deleteTest() throws JsonProcessingException {
 
-        // Usa a specification do teste anterior
-
         given(specification)
                 .pathParam("id", person.getId())
-            .when()
+                .when()
                 .delete("{id}")
-            .then()
+                .then()
                 .statusCode(204);
     }
 
@@ -223,68 +245,48 @@ class PersonControllerYamlTest extends AbstractIntegrationTest {
     @Order(6)
     void findAllTest() throws JsonProcessingException {
 
-        // Usa a specification do teste anterior
-
         var response = given(specification)
                 .accept(MediaType.APPLICATION_YAML_VALUE)
                 .queryParams("page", 3, "size", 12, "direction", "asc")
-            .when()
+                .when()
                 .get()
-            .then()
+                .then()
                 .statusCode(200)
                 .contentType(MediaType.APPLICATION_YAML_VALUE)
-            .extract()
+                .extract()
                 .body()
-                    .as(PagedModelPerson.class, yamlMapper);
+                .as(PagedModelPerson.class, objectMapper);
 
         List<PersonDTO> people = response.getContent();
 
-        PersonDTO personZero = people.get(0);
-        person = personZero;
+        PersonDTO personOne = people.get(0);
 
-        assertNotNull(personZero.getId());
-        assertNotNull(personZero.getFirstName());
-        assertNotNull(personZero.getLastName());
-        assertNotNull(personZero.getAddress());
-        assertNotNull(personZero.getGender());
+        assertNotNull(personOne.getId());
+        assertTrue(personOne.getId() > 0);
 
-        assertTrue(personZero.getId() > 0);
-
-        assertEquals("Allie", personZero.getFirstName());
-        assertEquals("Grigoletti", personZero.getLastName());
-        assertEquals("Room 1711", personZero.getAddress());
-        assertEquals("Female", personZero.getGender());
-        assertFalse(personZero.getEnabled());
+        assertEquals("Allin", personOne.getFirstName());
+        assertEquals("Emmot", personOne.getLastName());
+        assertEquals("7913 Lindbergh Way", personOne.getAddress());
+        assertEquals("Male", personOne.getGender());
+        assertFalse(personOne.getEnabled());
 
         PersonDTO personFour = people.get(4);
-        person = personFour;
 
         assertNotNull(personFour.getId());
-        assertNotNull(personFour.getFirstName());
-        assertNotNull(personFour.getLastName());
-        assertNotNull(personFour.getAddress());
-        assertNotNull(personFour.getGender());
-
         assertTrue(personFour.getId() > 0);
 
-        assertEquals("Alonzo", personFour.getFirstName());
-        assertEquals("Dorning", personFour.getLastName());
-        assertEquals("18th Floor", personFour.getAddress());
+        assertEquals("Alonso", personFour.getFirstName());
+        assertEquals("Luchelli", personFour.getLastName());
+        assertEquals("9 Doe Crossing Avenue", personFour.getAddress());
         assertEquals("Male", personFour.getGender());
         assertFalse(personFour.getEnabled());
     }
 
     @Test
     @Order(7)
-    void findByName() throws JsonProcessingException {
+    void findByNameTestTest() throws JsonProcessingException {
 
-        // Usa a specification do teste anterior
-
-        var response = given().config(RestAssuredConfig.config()
-                        .encoderConfig(
-                                EncoderConfig.encoderConfig().
-                                        encodeContentTypeAs(MediaType.APPLICATION_YAML_VALUE, ContentType.TEXT)
-                        )).spec(specification)
+        var response = given(specification)
                 .accept(MediaType.APPLICATION_YAML_VALUE)
                 .pathParam("firstName", "and")
                 .queryParams("page", 0, "size", 12, "direction", "asc")
@@ -295,50 +297,105 @@ class PersonControllerYamlTest extends AbstractIntegrationTest {
                 .contentType(MediaType.APPLICATION_YAML_VALUE)
                 .extract()
                 .body()
-                .as(PagedModelPerson.class, yamlMapper);
+                .as(PagedModelPerson.class, objectMapper);
 
         List<PersonDTO> people = response.getContent();
 
-        PersonDTO personZero = people.get(0);
-        person = personZero;
+        PersonDTO personOne = people.get(0);
 
-        assertNotNull(personZero.getId());
-        assertNotNull(personZero.getFirstName());
-        assertNotNull(personZero.getLastName());
-        assertNotNull(personZero.getAddress());
-        assertNotNull(personZero.getGender());
+        assertNotNull(personOne.getId());
+        assertTrue(personOne.getId() > 0);
 
-        assertTrue(personZero.getId() > 0);
-
-        assertEquals("Alejandrina", personZero.getFirstName());
-        assertEquals("Arnoud", personZero.getLastName());
-        assertEquals("Room 465", personZero.getAddress());
-        assertEquals("Female", personZero.getGender());
-        assertTrue(personZero.getEnabled());
+        assertEquals("Alessandro", personOne.getFirstName());
+        assertEquals("McFaul", personOne.getLastName());
+        assertEquals("5 Lukken Plaza", personOne.getAddress());
+        assertEquals("Male", personOne.getGender());
+        assertTrue(personOne.getEnabled());
 
         PersonDTO personFour = people.get(4);
-        person = personFour;
 
         assertNotNull(personFour.getId());
-        assertNotNull(personFour.getFirstName());
-        assertNotNull(personFour.getLastName());
-        assertNotNull(personFour.getAddress());
-        assertNotNull(personFour.getGender());
-
         assertTrue(personFour.getId() > 0);
 
-        assertEquals("Andreas", personFour.getFirstName());
-        assertEquals("Duggary", personFour.getLastName());
-        assertEquals("13th Floor", personFour.getAddress());
+        assertEquals("Brandyn", personFour.getFirstName());
+        assertEquals("Grasha", personFour.getLastName());
+        assertEquals("96 Mosinee Parkway", personFour.getAddress());
         assertEquals("Male", personFour.getGender());
         assertTrue(personFour.getEnabled());
     }
 
+    @Test
+    @Order(6)
+    void hateoasAndHalTest() throws JsonProcessingException {
+
+        Response response = given(specification)
+                .accept(MediaType.APPLICATION_YAML_VALUE)
+                .queryParams("page", 3, "size", 12, "direction", "asc")
+                .when()
+                .get()
+                .then()
+                .statusCode(200)
+                .contentType(MediaType.APPLICATION_YAML_VALUE)
+                .extract()
+                .response();
+
+        // Retrieves the response body as a YAML string
+        String yaml = response.getBody().asString();
+
+        // Uses SnakeYAML to parse the YAML
+        Yaml yamlParser = new Yaml();
+        Map<String, Object> parsedYaml = yamlParser.load(yaml);
+
+        // Validates the content
+        List<Map<String, Object>> content = (List<Map<String, Object>>) parsedYaml.get("content");
+
+        // Iterates through each person in the content
+        for (Map<String, Object> person: content) {
+
+            List<Map<String, String>> links = (List<Map<String, String>>) person.get("links");
+            // Iterates through each link in the person's links
+            for (Map<String, String> link: links) {
+                // Checks if the link has the expected attributes
+                assertThat("HATEOAS/HAL link rel is missing", link, hasKey("rel"));
+                assertThat("HATEOAS/HAL link href is missing", link, hasKey("href"));
+                assertThat("HATEOAS/HAL link type is missing", link, hasKey("type"));
+
+                // Validates the format of the link
+                assertThat("HATEOAS/HAL link " + link + " has an invalid URL", link.get("href"), matchesPattern("https?://.+/api/person/v1.*"));
+            }
+        }
+
+        // Validates pagination attributes
+        Map<String, Object> page = (Map<String, Object>) parsedYaml.get("page");
+        assertThat("Page number is incorrect", page.get("number"), is(3));
+        assertThat("Page size is incorrect", page.get("size"), is(12));
+
+        // Validates the total number of elements and pages
+        Integer totalElements = Integer.parseInt(page.get("totalElements").toString());
+        Integer totalPages = Integer.parseInt(page.get("totalPages").toString());
+
+        assertTrue("totalElements should be greater than 0", totalElements > 0);
+        assertTrue("totalPages should be greater than 0", totalPages > 0);
+
+        // Validates the navigation links of the page
+        List<Map<String, String>> pageLinks = (List<Map<String, String>>) parsedYaml.get("links");
+        for (Map<String, String> pageLink : pageLinks) {
+
+            // Checks if the page link contains the href attribute
+            assertThat("HATEOAS/HAL page link href is missing", pageLink, hasKey("href"));
+
+            // Validates the format of the page link URL
+            assertThat("HATEOAS/HAL page link " + pageLink + " has an invalid URL", pageLink.get("href"), matchesPattern("https?://.+/api/person/v1.*"));
+        }
+    }
+
     private void mockPerson() {
         person.setFirstName("Linus");
-        person.setLastName("Torvarlds");
+        person.setLastName("Torvalds");
         person.setAddress("Helsinki - Finland");
         person.setGender("Male");
         person.setEnabled(true);
+        person.setProfileUrl("https://pub.erudio.com.br/meus-cursos");
+        person.setPhotoUrl("https://pub.erudio.com.br/meus-cursos");
     }
 }

@@ -3,14 +3,10 @@ package br.com.javastudies.sbrest.integrationtests.dto.wrapper.xml_yaml;
 import br.com.javastudies.sbrest.integrationtests.dto.BookDTO;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
-
-import java.io.Serializable;
 import java.util.List;
 
 @XmlRootElement
-public class PagedModelBook implements Serializable {
-
-    private static final long serialVersionUID = 1L;
+public class PagedModelBook {
 
     @XmlElement(name = "content")
     public List<BookDTO> content;

@@ -7,7 +7,6 @@ import org.springframework.core.env.MapPropertySource;
 import org.springframework.test.context.ContextConfiguration;
 import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.lifecycle.Startables;
-
 import java.util.Map;
 import java.util.stream.Stream;
 
@@ -22,14 +21,6 @@ public class AbstractIntegrationTest {
             Startables.deepStart(Stream.of(mysql)).join();
         }
 
-        @Override
-        public void initialize(ConfigurableApplicationContext applicationContext) {
-            startContainers();
-            ConfigurableEnvironment environment = applicationContext.getEnvironment();
-            MapPropertySource testContainers = new MapPropertySource("testContainers", (Map)createConnectionConfiguration());
-            environment.getPropertySources().addFirst(testContainers);
-        }
-
         private static Map<String, String> createConnectionConfiguration() {
             return Map.of(
                     "spring.datasource.url", mysql.getJdbcUrl(),
@@ -37,6 +28,16 @@ public class AbstractIntegrationTest {
                     "spring.datasource.password", mysql.getPassword()
             );
         }
+
+        @Override
+        public void initialize(ConfigurableApplicationContext applicationContext) {
+            startContainers();
+            ConfigurableEnvironment environment = applicationContext.getEnvironment();
+            MapPropertySource testContainers = new MapPropertySource("testContainers", (Map) createConnectionConfiguration());
+            environment.getPropertySources().addFirst(testContainers);
+        }
+
+
     }
 
 }
