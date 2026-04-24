@@ -35,6 +35,12 @@ spring:
 file:
   upload-dir: /home/lana/uploadDir
 
+security:
+  jwt:
+    token:
+      secret-key: 53cr37
+      expire-lenght: 3600000 # 1H
+
 email:
   subject: "Default Subject"
   message: "Default Message"
@@ -48,6 +54,8 @@ logging:
     root: INFO
 
 spring-doc:
-  paths-to-match: /api/**/**
+  paths-to-match:
+    - /auth/**
+    - /api/**/**
   swagger-ui:
     use-root-path: true
