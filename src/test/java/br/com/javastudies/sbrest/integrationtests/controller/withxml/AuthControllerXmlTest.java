@@ -35,37 +35,30 @@ class AuthControllerXmlTest extends AbstractIntegrationTest {
         AccountCredentialsDTO credentials =
                 new AccountCredentialsDTO("leandro", "admin123");
 
-        var response = given()
+        var content = given()
                 .basePath("/auth/signin")
                 .port(TestConfigs.SERVER_PORT)
                 .contentType(MediaType.APPLICATION_XML_VALUE)
                 .accept(MediaType.APPLICATION_XML_VALUE)
                 .body(credentials)
                 .when()
-                .post();
-
-        response.then().log().all();
-
-        var content = response
+                .post()
                 .then()
                 .statusCode(200)
                 .extract()
                 .body()
                 .asString();
 
-        var xml = objectMapper.readTree(content);
-        var bodyNode = xml.get("body");
+        token = objectMapper.readValue(content, TokenDTO.class);
 
-        token = objectMapper.treeToValue(bodyNode, TokenDTO.class);
-
-        Assertions.assertNotNull(token.getAccessToken());
-        Assertions.assertNotNull(token.getRefreshToken());
+        assertNotNull(token.getAccessToken());
+        assertNotNull(token.getRefreshToken());
     }
 
     @Test
     @Order(2)
     void refreshToken() throws JsonProcessingException {
-        var response = given()
+        var content = given()
                 .basePath("/auth/refresh")
                 .port(TestConfigs.SERVER_PORT)
                 .contentType(MediaType.APPLICATION_XML_VALUE)
@@ -73,23 +66,16 @@ class AuthControllerXmlTest extends AbstractIntegrationTest {
                 .pathParam("username", token.getUsername())
                 .header(TestConfigs.HEADER_PARAM_AUTHORIZATION, "Bearer " + token.getRefreshToken())
                 .when()
-                .put("{username}");
-
-        response.then().log().all();
-
-        var content = response
+                .put("{username}")
                 .then()
                 .statusCode(200)
                 .extract()
                 .body()
                 .asString();
 
-        var xml = objectMapper.readTree(content);
-        var bodyNode = xml.get("body");
+        token = objectMapper.readValue(content, TokenDTO.class);
 
-        token = objectMapper.treeToValue(bodyNode, TokenDTO.class);
-
-        Assertions.assertNotNull(token.getAccessToken());
-        Assertions.assertNotNull(token.getRefreshToken());
+        assertNotNull(token.getAccessToken());
+        assertNotNull(token.getRefreshToken());
     }
 }

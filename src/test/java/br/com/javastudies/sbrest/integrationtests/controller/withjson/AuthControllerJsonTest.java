@@ -35,28 +35,18 @@ class AuthControllerJsonTest extends AbstractIntegrationTest {
         AccountCredentialsDTO credentials =
                 new AccountCredentialsDTO("leandro", "admin123");
 
-        var response = given()
+        token = given()
                 .basePath("/auth/signin")
                 .port(TestConfigs.SERVER_PORT)
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .body(credentials)
                 .when()
-                .post();
-
-        response.then().log().all();
-
-        // Extrai o BODY do JSON
-        var content = response
+                .post()
                 .then()
                 .statusCode(200)
                 .extract()
                 .body()
-                .asString();
-
-        var jsonNode = objectMapper.readTree(content);
-        var bodyNode = jsonNode.get("body");
-
-        token = objectMapper.treeToValue(bodyNode, TokenDTO.class);
+                .as(TokenDTO.class);
 
         Assertions.assertNotNull(token.getAccessToken());
         Assertions.assertNotNull(token.getRefreshToken());
@@ -70,14 +60,17 @@ class AuthControllerJsonTest extends AbstractIntegrationTest {
                 .basePath("/auth/refresh")
                 .port(TestConfigs.SERVER_PORT)
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
-                    .pathParam("username", token.getUsername())
-                    .header(TestConfigs.HEADER_PARAM_AUTHORIZATION, "Bearer " + token.getRefreshToken())
+                .pathParam("username", token.getUsername())
+                .header(TestConfigs.HEADER_PARAM_AUTHORIZATION, "Bearer " + token.getRefreshToken())
                 .when()
-                    .put("{username}")
-                        .then()
-                            .statusCode(200)
-                                .extract()
-                                .body()
-                                .as(TokenDTO.class);
+                .put("{username}")
+                .then()
+                .statusCode(200)
+                .extract()
+                .body()
+                .as(TokenDTO.class);
+
+        assertNotNull(token.getAccessToken());
+        assertNotNull(token.getRefreshToken());
     }
 }
