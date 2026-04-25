@@ -38,13 +38,13 @@ class PersonRepositoryTest extends AbstractIntegrationTest {
                 12,
                 Sort.by(Sort.Direction.ASC, "firstName"));
 
-        person = repository.findPeopleByName("iko", pageable).getContent().getFirst();
+        person = repository.findPeopleByName("earlin", pageable).getContent().getFirst();
 
         assertNotNull(person);
         assertNotNull(person.getId());
-        assertEquals("Nikola", person.getFirstName());
-        assertEquals("Tesla", person.getLastName());
-        assertEquals("Male", person.getGender());
+        assertEquals("Pearline", person.getFirstName());
+        assertEquals("Hyslop", person.getLastName());
+        assertEquals("Female", person.getGender());
         assertTrue(person.getEnabled());
     }
 
@@ -60,9 +60,9 @@ class PersonRepositoryTest extends AbstractIntegrationTest {
 
         assertNotNull(person);
         assertNotNull(person.getId());
-        assertEquals("Nikola", person.getFirstName());
-        assertEquals("Tesla", person.getLastName());
-        assertEquals("Male", person.getGender());
+        assertEquals("Pearline", person.getFirstName());
+        assertEquals("Hyslop", person.getLastName());
+        assertEquals("Female", person.getGender());
         assertFalse(person.getEnabled());
     }
 }

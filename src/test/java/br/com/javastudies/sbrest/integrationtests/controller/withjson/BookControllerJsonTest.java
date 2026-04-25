@@ -49,28 +49,19 @@ class BookControllerJsonTest extends AbstractIntegrationTest {
         AccountCredentialsDTO credentials =
                 new AccountCredentialsDTO("leandro", "admin123");
 
-        var response = given()
+        token = given()
                 .basePath("/auth/signin")
                 .port(TestConfigs.SERVER_PORT)
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .body(credentials)
                 .when()
-                .post();
-
-        response.then().log().all();
-
-        // Extrai o BODY do JSON
-        var content = response
+                .post()
                 .then()
                 .statusCode(200)
                 .extract()
                 .body()
-                .asString();
+                .as(TokenDTO.class);
 
-        var jsonNode = objectMapper.readTree(content);
-        var bodyNode = jsonNode.get("body");
-
-        token = objectMapper.treeToValue(bodyNode, TokenDTO.class);
 
         specification = new RequestSpecBuilder()
                 .addHeader(TestConfigs.HEADER_PARAM_ORIGIN, TestConfigs.ORIGIN_ERUDIO)
@@ -81,8 +72,8 @@ class BookControllerJsonTest extends AbstractIntegrationTest {
                 .addFilter(new ResponseLoggingFilter(LogDetail.ALL))
                 .build();
 
-        Assertions.assertNotNull(token.getAccessToken());
-        Assertions.assertNotNull(token.getRefreshToken());
+        assertNotNull(token.getAccessToken());
+        assertNotNull(token.getRefreshToken());
     }
 
     @Test
@@ -105,8 +96,8 @@ class BookControllerJsonTest extends AbstractIntegrationTest {
         BookDTO createdBook = objectMapper.readValue(content, BookDTO.class);
         book = createdBook;
 
-        Assertions.assertNotNull(createdBook.getId());
-        Assertions.assertNotNull(book.getId());
+        assertNotNull(createdBook.getId());
+        assertNotNull(book.getId());
         assertEquals("Docker Deep Dive", book.getTitle());
         assertEquals("Nigel Poulton", book.getAuthor());
         assertEquals(55.99, book.getPrice());

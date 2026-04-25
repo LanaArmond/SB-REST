@@ -14,6 +14,7 @@ import io.restassured.filter.log.LogDetail;
 import io.restassured.filter.log.RequestLoggingFilter;
 import io.restassured.filter.log.ResponseLoggingFilter;
 import io.restassured.specification.RequestSpecification;
+import org.junit.Assert;
 import org.junit.jupiter.api.*;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
@@ -49,28 +50,21 @@ class BookControllerXmlTest extends AbstractIntegrationTest {
         AccountCredentialsDTO credentials =
                 new AccountCredentialsDTO("leandro", "admin123");
 
-        var response = given()
+        var content = given()
                 .basePath("/auth/signin")
                 .port(TestConfigs.SERVER_PORT)
                 .contentType(MediaType.APPLICATION_XML_VALUE)
                 .accept(MediaType.APPLICATION_XML_VALUE)
                 .body(credentials)
                 .when()
-                .post();
-
-        response.then().log().all();
-
-        var content = response
+                .post()
                 .then()
                 .statusCode(200)
                 .extract()
                 .body()
                 .asString();
 
-        var xml = objectMapper.readTree(content);
-        var bodyNode = xml.get("body");
-
-        token = objectMapper.treeToValue(bodyNode, TokenDTO.class);
+        token = objectMapper.readValue(content, TokenDTO.class);
 
         specification = new RequestSpecBuilder()
                 .addHeader(TestConfigs.HEADER_PARAM_ORIGIN, TestConfigs.ORIGIN_ERUDIO)
@@ -81,8 +75,9 @@ class BookControllerXmlTest extends AbstractIntegrationTest {
                 .addFilter(new ResponseLoggingFilter(LogDetail.ALL))
                 .build();
 
-        Assertions.assertNotNull(token.getAccessToken());
-        Assertions.assertNotNull(token.getRefreshToken());
+
+        assertNotNull(token.getAccessToken());
+        assertNotNull(token.getRefreshToken());
     }
 
 

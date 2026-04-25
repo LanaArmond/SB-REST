@@ -54,47 +54,37 @@ class BookControllerYamlTest extends AbstractIntegrationTest {
         AccountCredentialsDTO credentials =
                 new AccountCredentialsDTO("leandro", "admin123");
 
-        var response = given()
-                .config(RestAssuredConfig.config()
-                        .encoderConfig(EncoderConfig.encoderConfig()
-                                .encodeContentTypeAs(MediaType.APPLICATION_YAML_VALUE, ContentType.TEXT)))
+        token = given()
+                .config(
+                        RestAssuredConfig.config()
+                                .encoderConfig(
+                                        EncoderConfig.encoderConfig().
+                                                encodeContentTypeAs(MediaType.APPLICATION_YAML_VALUE, ContentType.TEXT))
+                )
                 .basePath("/auth/signin")
                 .port(TestConfigs.SERVER_PORT)
                 .contentType(MediaType.APPLICATION_YAML_VALUE)
                 .accept(MediaType.APPLICATION_YAML_VALUE)
                 .body(credentials, objectMapper)
                 .when()
-                .post();
-
-        response.then().log().all();
-
-        // 1. Get raw YAML string
-        String yamlString = response.then()
+                .post()
+                .then()
                 .statusCode(200)
                 .extract()
                 .body()
-                .asString();
-
-        // 2. Parse the envelope with Jackson (using YAMLFactory inside YAMLMapper)
-        com.fasterxml.jackson.databind.JsonNode root = objectMapper
-                .getMapper()                         // expose the Jackson mapper inside YAMLMapper
-                .readTree(yamlString);
-
-        // 3. Extract the "body" node and convert it to TokenDTO
-        token = objectMapper.getMapper()
-                .treeToValue(root.get("body"), TokenDTO.class);
+                .as(TokenDTO.class, objectMapper);
 
         specification = new RequestSpecBuilder()
                 .addHeader(TestConfigs.HEADER_PARAM_ORIGIN, TestConfigs.ORIGIN_ERUDIO)
-                .addHeader(TestConfigs.HEADER_PARAM_AUTHORIZATION, "Bearer " + token.getAccessToken())
+                .addHeader(TestConfigs.HEADER_PARAM_AUTHORIZATION, "Bearer " + token.getRefreshToken())
                 .setBasePath("/api/book")
                 .setPort(TestConfigs.SERVER_PORT)
                 .addFilter(new RequestLoggingFilter(LogDetail.ALL))
                 .addFilter(new ResponseLoggingFilter(LogDetail.ALL))
                 .build();
 
-        Assertions.assertNotNull(token.getAccessToken());
-        Assertions.assertNotNull(token.getRefreshToken());
+        assertNotNull(token.getAccessToken());
+        assertNotNull(token.getRefreshToken());
     }
 
     @Test

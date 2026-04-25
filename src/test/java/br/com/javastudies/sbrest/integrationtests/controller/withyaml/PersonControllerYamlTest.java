@@ -264,10 +264,10 @@ class PersonControllerYamlTest extends AbstractIntegrationTest {
         assertNotNull(personOne.getId());
         assertTrue(personOne.getId() > 0);
 
-        assertEquals("Allin", personOne.getFirstName());
-        assertEquals("Emmot", personOne.getLastName());
-        assertEquals("7913 Lindbergh Way", personOne.getAddress());
-        assertEquals("Male", personOne.getGender());
+        assertEquals("Allie", personOne.getFirstName());
+        assertEquals("Grigoletti", personOne.getLastName());
+        assertEquals("Room 1711", personOne.getAddress());
+        assertEquals("Female", personOne.getGender());
         assertFalse(personOne.getEnabled());
 
         PersonDTO personFour = people.get(4);
@@ -275,16 +275,16 @@ class PersonControllerYamlTest extends AbstractIntegrationTest {
         assertNotNull(personFour.getId());
         assertTrue(personFour.getId() > 0);
 
-        assertEquals("Alonso", personFour.getFirstName());
-        assertEquals("Luchelli", personFour.getLastName());
-        assertEquals("9 Doe Crossing Avenue", personFour.getAddress());
+        assertEquals("Alonzo", personFour.getFirstName());
+        assertEquals("Dorning", personFour.getLastName());
+        assertEquals("18th Floor", personFour.getAddress());
         assertEquals("Male", personFour.getGender());
         assertFalse(personFour.getEnabled());
     }
 
     @Test
     @Order(7)
-    void findByNameTestTest() throws JsonProcessingException {
+    void findByNameTest() throws JsonProcessingException {
 
         var response = given(specification)
                 .accept(MediaType.APPLICATION_YAML_VALUE)
@@ -306,10 +306,10 @@ class PersonControllerYamlTest extends AbstractIntegrationTest {
         assertNotNull(personOne.getId());
         assertTrue(personOne.getId() > 0);
 
-        assertEquals("Alessandro", personOne.getFirstName());
-        assertEquals("McFaul", personOne.getLastName());
-        assertEquals("5 Lukken Plaza", personOne.getAddress());
-        assertEquals("Male", personOne.getGender());
+        assertEquals("Alejandrina", personOne.getFirstName());
+        assertEquals("Arnoud", personOne.getLastName());
+        assertEquals("Room 465", personOne.getAddress());
+        assertEquals("Female", personOne.getGender());
         assertTrue(personOne.getEnabled());
 
         PersonDTO personFour = people.get(4);
@@ -317,9 +317,9 @@ class PersonControllerYamlTest extends AbstractIntegrationTest {
         assertNotNull(personFour.getId());
         assertTrue(personFour.getId() > 0);
 
-        assertEquals("Brandyn", personFour.getFirstName());
-        assertEquals("Grasha", personFour.getLastName());
-        assertEquals("96 Mosinee Parkway", personFour.getAddress());
+        assertEquals("Andreas", personFour.getFirstName());
+        assertEquals("Duggary", personFour.getLastName());
+        assertEquals("13th Floor", personFour.getAddress());
         assertEquals("Male", personFour.getGender());
         assertTrue(personFour.getEnabled());
     }
@@ -361,7 +361,7 @@ class PersonControllerYamlTest extends AbstractIntegrationTest {
                 assertThat("HATEOAS/HAL link type is missing", link, hasKey("type"));
 
                 // Validates the format of the link
-                assertThat("HATEOAS/HAL link " + link + " has an invalid URL", link.get("href"), matchesPattern("https?://.+/api/person/v1.*"));
+                assertThat("HATEOAS/HAL link " + link + " has an invalid URL", link.get("href"), matchesPattern("https?://.+/api/person.*"));
             }
         }
 
@@ -385,7 +385,7 @@ class PersonControllerYamlTest extends AbstractIntegrationTest {
             assertThat("HATEOAS/HAL page link href is missing", pageLink, hasKey("href"));
 
             // Validates the format of the page link URL
-            assertThat("HATEOAS/HAL page link " + pageLink + " has an invalid URL", pageLink.get("href"), matchesPattern("https?://.+/api/person/v1.*"));
+            assertThat("HATEOAS/HAL page link " + pageLink + " has an invalid URL", pageLink.get("href"), matchesPattern("https?://.+/api/person.*"));
         }
     }
 

@@ -55,26 +55,19 @@ class PersonControllerJsonTest extends AbstractIntegrationTest {
         AccountCredentialsDTO credentials =
                 new AccountCredentialsDTO("leandro", "admin123");
 
-        var response = given()
+        token = given()
                 .basePath("/auth/signin")
                 .port(TestConfigs.SERVER_PORT)
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .body(credentials)
                 .when()
-                .post();
-
-        // Extrai o BODY do JSON
-        var content = response
+                .post()
                 .then()
                 .statusCode(200)
                 .extract()
                 .body()
-                .asString();
+                .as(TokenDTO.class);
 
-        var jsonNode = objectMapper.readTree(content);
-        var bodyNode = jsonNode.get("body");
-
-        token = objectMapper.treeToValue(bodyNode, TokenDTO.class);
 
         specification = new RequestSpecBuilder()
                 .addHeader(TestConfigs.HEADER_PARAM_ORIGIN, TestConfigs.ORIGIN_ERUDIO)
@@ -85,8 +78,8 @@ class PersonControllerJsonTest extends AbstractIntegrationTest {
                 .addFilter(new ResponseLoggingFilter(LogDetail.ALL))
                 .build();
 
-        Assertions.assertNotNull(token.getAccessToken());
-        Assertions.assertNotNull(token.getRefreshToken());
+        assertNotNull(token.getAccessToken());
+        assertNotNull(token.getRefreshToken());
     }
 
     @Test
@@ -248,9 +241,9 @@ class PersonControllerJsonTest extends AbstractIntegrationTest {
         Assertions.assertTrue(personOne.getId() > 0);
 
         assertEquals("Allie", personOne.getFirstName());
-        assertEquals("Emmot", personOne.getLastName());
-        assertEquals("7913 Lindbergh Way", personOne.getAddress());
-        assertEquals("Male", personOne.getGender());
+        assertEquals("Grigoletti", personOne.getLastName());
+        assertEquals("Room 1711", personOne.getAddress());
+        assertEquals("Female", personOne.getGender());
         assertFalse(personOne.getEnabled());
 
         PersonDTO personFour = people.get(4);
@@ -258,9 +251,9 @@ class PersonControllerJsonTest extends AbstractIntegrationTest {
         Assertions.assertNotNull(personFour.getId());
         Assertions.assertTrue(personFour.getId() > 0);
 
-        assertEquals("Alonso", personFour.getFirstName());
-        assertEquals("Luchelli", personFour.getLastName());
-        assertEquals("9 Doe Crossing Avenue", personFour.getAddress());
+        assertEquals("Alonzo", personFour.getFirstName());
+        assertEquals("Dorning", personFour.getLastName());
+        assertEquals("18th Floor", personFour.getAddress());
         assertEquals("Male", personFour.getGender());
         assertFalse(personFour.getEnabled());
     }
@@ -291,10 +284,10 @@ class PersonControllerJsonTest extends AbstractIntegrationTest {
         Assertions.assertNotNull(personOne.getId());
         Assertions.assertTrue(personOne.getId() > 0);
 
-        assertEquals("Alessandro", personOne.getFirstName());
-        assertEquals("McFaul", personOne.getLastName());
-        assertEquals("5 Lukken Plaza", personOne.getAddress());
-        assertEquals("Male", personOne.getGender());
+        assertEquals("Alejandrina", personOne.getFirstName());
+        assertEquals("Arnoud", personOne.getLastName());
+        assertEquals("Room 465", personOne.getAddress());
+        assertEquals("Female", personOne.getGender());
         Assertions.assertTrue(personOne.getEnabled());
 
         PersonDTO personFour = people.get(4);
@@ -302,11 +295,11 @@ class PersonControllerJsonTest extends AbstractIntegrationTest {
         Assertions.assertNotNull(personFour.getId());
         Assertions.assertTrue(personFour.getId() > 0);
 
-        assertEquals("Brandyn", personFour.getFirstName());
-        assertEquals("Grasha", personFour.getLastName());
-        assertEquals("96 Mosinee Parkway", personFour.getAddress());
+        assertEquals("Andreas", personFour.getFirstName());
+        assertEquals("Duggary", personFour.getLastName());
+        assertEquals("13th Floor", personFour.getAddress());
         assertEquals("Male", personFour.getGender());
-        Assertions.assertTrue(personFour.getEnabled());
+        assertTrue(personFour.getEnabled());
     }
 
     @Test

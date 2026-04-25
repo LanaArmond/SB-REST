@@ -16,30 +16,53 @@ public class BookDTO implements Serializable {
     private Double price;
     private String title;
 
-    public Long getId() { return id; }
+    public BookDTO() {}
 
-    public void setId(Long id) { this.id = id; }
+    public Long getId() {
+        return id;
+    }
 
-    public String getAuthor() { return author; }
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-    public void setAuthor(String author) { this.author = author; }
+    public String getAuthor() {
+        return author;
+    }
 
-    public Date getLaunchDate() { return launchDate; }
+    public void setAuthor(String author) {
+        this.author = author;
+    }
 
-    public void setLaunchDate(Date launchDate) { this.launchDate = launchDate; }
+    public Date getLaunchDate() {
+        return launchDate;
+    }
 
-    public Double getPrice() { return price; }
+    public void setLaunchDate(Date launchDate) {
+        this.launchDate = launchDate;
+    }
 
-    public void setPrice(Double price) { this.price = price; }
+    public Double getPrice() {
+        return price;
+    }
 
-    public String getTitle() { return title; }
+    public void setPrice(Double price) {
+        this.price = price;
+    }
 
-    public void setTitle(String title) { this.title = title; }
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
 
     @Override
     public boolean equals(Object o) {
-        if (!(o instanceof BookDTO bookDTO)) return false;
-        return Objects.equals(getId(), bookDTO.getId()) && Objects.equals(getAuthor(), bookDTO.getAuthor()) && Objects.equals(getLaunchDate(), bookDTO.getLaunchDate()) && Objects.equals(getPrice(), bookDTO.getPrice()) && Objects.equals(getTitle(), bookDTO.getTitle());
+        if (o == null || getClass() != o.getClass()) return false;
+        BookDTO book = (BookDTO) o;
+        return Objects.equals(getId(), book.getId()) && Objects.equals(getAuthor(), book.getAuthor()) && Objects.equals(getLaunchDate(), book.getLaunchDate()) && Objects.equals(getPrice(), book.getPrice()) && Objects.equals(getTitle(), book.getTitle());
     }
 
     @Override

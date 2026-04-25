@@ -78,8 +78,8 @@ class PersonControllerXmlTest extends AbstractIntegrationTest {
                 .build();
 
 
-        Assertions.assertNotNull(token.getAccessToken());
-        Assertions.assertNotNull(token.getRefreshToken());
+        assertNotNull(token.getAccessToken());
+        assertNotNull(token.getRefreshToken());
     }
 
     @Test
@@ -242,10 +242,10 @@ class PersonControllerXmlTest extends AbstractIntegrationTest {
         Assertions.assertNotNull(personOne.getId());
         Assertions.assertTrue(personOne.getId() > 0);
 
-        assertEquals("Allin", personOne.getFirstName());
-        assertEquals("Emmot", personOne.getLastName());
-        assertEquals("7913 Lindbergh Way", personOne.getAddress());
-        assertEquals("Male", personOne.getGender());
+        assertEquals("Allie", personOne.getFirstName());
+        assertEquals("Grigoletti", personOne.getLastName());
+        assertEquals("Room 1711", personOne.getAddress());
+        assertEquals("Female", personOne.getGender());
         assertFalse(personOne.getEnabled());
 
         PersonDTO personFour = people.get(4);
@@ -253,16 +253,16 @@ class PersonControllerXmlTest extends AbstractIntegrationTest {
         Assertions.assertNotNull(personFour.getId());
         Assertions.assertTrue(personFour.getId() > 0);
 
-        assertEquals("Alonso", personFour.getFirstName());
-        assertEquals("Luchelli", personFour.getLastName());
-        assertEquals("9 Doe Crossing Avenue", personFour.getAddress());
+        assertEquals("Alonzo", personFour.getFirstName());
+        assertEquals("Dorning", personFour.getLastName());
+        assertEquals("18th Floor", personFour.getAddress());
         assertEquals("Male", personFour.getGender());
         assertFalse(personFour.getEnabled());
     }
 
     @Test
     @Order(7)
-    void findByNameTestTest() throws JsonProcessingException {
+    void findByNameTest() throws JsonProcessingException {
 
         var content = given(specification)
                 .accept(MediaType.APPLICATION_XML_VALUE)
@@ -285,10 +285,10 @@ class PersonControllerXmlTest extends AbstractIntegrationTest {
         Assertions.assertNotNull(personOne.getId());
         Assertions.assertTrue(personOne.getId() > 0);
 
-        assertEquals("Alessandro", personOne.getFirstName());
-        assertEquals("McFaul", personOne.getLastName());
-        assertEquals("5 Lukken Plaza", personOne.getAddress());
-        assertEquals("Male", personOne.getGender());
+        assertEquals("Alejandrina", personOne.getFirstName());
+        assertEquals("Arnoud", personOne.getLastName());
+        assertEquals("Room 465", personOne.getAddress());
+        assertEquals("Female", personOne.getGender());
         Assertions.assertTrue(personOne.getEnabled());
 
         PersonDTO personFour = people.get(4);
@@ -296,11 +296,11 @@ class PersonControllerXmlTest extends AbstractIntegrationTest {
         Assertions.assertNotNull(personFour.getId());
         Assertions.assertTrue(personFour.getId() > 0);
 
-        assertEquals("Brandyn", personFour.getFirstName());
-        assertEquals("Grasha", personFour.getLastName());
-        assertEquals("96 Mosinee Parkway", personFour.getAddress());
+        assertEquals("Andreas", personFour.getFirstName());
+        assertEquals("Duggary", personFour.getLastName());
+        assertEquals("13th Floor", personFour.getAddress());
         assertEquals("Male", personFour.getGender());
-        Assertions.assertTrue(personFour.getEnabled());
+        assertTrue(personFour.getEnabled());
     }
 
     @Test
@@ -330,7 +330,7 @@ class PersonControllerXmlTest extends AbstractIntegrationTest {
         // Iterates through each link and performs validations
         for (String link : peopleLinks) {
             // Checks if the URL is in the correct format
-            assertThat("HATEOAS/HAL link " + link + " has an invalid URL", link, matchesPattern("https?://.+/api/person/v1.*"));
+            assertThat("HATEOAS/HAL link " + link + " has an invalid URL", link, matchesPattern("https?://.+/api/person.*"));
 
             // Ensures the URL is not null
             assertThat("HATEOAS/HAL link " + link + " has a null URL", notNullValue());
@@ -340,7 +340,7 @@ class PersonControllerXmlTest extends AbstractIntegrationTest {
         List<String> pageLinks = xmlPath.getList("PagedModel.links.href");
         for (String pageLink: pageLinks) {
             // Checks if the navigation links are in the correct format
-            assertThat("HATEOAS/HAL pageLink " + pageLink + " has an invalid URL", pageLink, matchesPattern("https?://.+/api/person/v1.*"));
+            assertThat("HATEOAS/HAL pageLink " + pageLink + " has an invalid URL", pageLink, matchesPattern("https?://.+/api/person.*"));
 
             // Ensures the URL is not null
             assertThat("HATEOAS/HAL pageLink " + pageLink + " has a null URL", notNullValue());

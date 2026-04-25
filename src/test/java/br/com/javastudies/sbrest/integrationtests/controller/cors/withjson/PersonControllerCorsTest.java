@@ -92,9 +92,6 @@ class PersonControllerCorsTest extends AbstractIntegrationTest {
         PersonDTO createdPerson = objectMapper.readValue(content, PersonDTO.class);
         person = createdPerson;
 
-        System.out.println("Person");
-        System.out.println(createdPerson.toString());
-
         assertNotNull(createdPerson.getId());
         assertNotNull(createdPerson.getFirstName());
         assertNotNull(createdPerson.getLastName());
@@ -109,7 +106,6 @@ class PersonControllerCorsTest extends AbstractIntegrationTest {
         assertEquals("Male", createdPerson.getGender());
         assertTrue(createdPerson.getEnabled());
 
-        System.out.println("DTO recebido: " + person.getLastName());
     }
 
     @Test

@@ -47,7 +47,6 @@ public class PersonDTO extends RepresentationModel<PersonDTO> implements Seriali
         this.firstName = firstName;
     }
 
-    @JsonIgnore
     public String getLastName() {
         return lastName;
     }
