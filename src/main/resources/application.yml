@@ -45,6 +45,9 @@ email:
   subject: "Default Subject"
   message: "Default Message"
 
+server:
+  port: 80
+
 cors:
   originPatterns: http://localhost:8080,http://localhost:3000,https://www.erudio.com.br
 
